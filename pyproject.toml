@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "hw14-fastapi-docs_tests"
+name = "web_team_1"
 version = "0.1.0"
 description = "FastAPI Learning"
 authors = ["1Oleksandr <kondratiuk.ai@gmail.com>"]
