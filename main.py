@@ -1,19 +1,21 @@
+from pathlib import Path
+from typing import Annotated, Callable
+
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, HTTPException, requests, status
+from fastapi.responses import JSONResponse
 from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pathlib import Path
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+import redis.asyncio as redis
+import uvicorn
 
 from src.database.db import get_db
 from src.conf.config import config
 from src.routes import auth, users, images, comments
-
-import redis.asyncio as redis
-import uvicorn
 
 
 @asynccontextmanager
@@ -41,6 +43,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 BASE_DIR = Path(__file__).parent
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
@@ -100,7 +103,7 @@ async def healthchecker(db: AsyncSession = Depends(get_db)):
             raise HTTPException(
                 status_code=500, detail="Database is not configured correctly"
             )
-        return {"message": "Database 'contacts' is healthy"}
+        return {"message": "Database 'Imagine' is healthy"}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Error connecting to the database")

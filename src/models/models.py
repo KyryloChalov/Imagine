@@ -26,13 +26,19 @@ photo_m2m_tag = Table(
     Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
 )
 
+# class DateField():
+#     created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
+#     updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+    
 class Photo(Base):
     __tablename__ = "photos"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     path: Mapped[str] = mapped_column(String(250), nullable=False)
     description: Mapped[str] =  mapped_column(String(250), nullable=False)
-    created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
     path_tranform: Mapped[str] = mapped_column(String(250))
+    created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
+    # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+    
     # b_date = column_property(func.to_date(func.concat(datetime.today().year, '-', extract('month', birthday), '-', extract('day', birthday)), 'YYYY-MM-DD'))
     
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'), nullable=True)
@@ -47,6 +53,7 @@ class Comment(Base):
     rating: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
     updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+    
     
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'), nullable=True)
     user: Mapped["User"] = relationship("User", backref="comments", lazy="joined")
@@ -67,9 +74,10 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
-    refresh_token: Mapped[str] = mapped_column(String(255), nullable=True)
     created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
     updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+    
+    refresh_token: Mapped[str] = mapped_column(String(255), nullable=True)
     role: Mapped[Enum] = mapped_column('role', Enum(Role), default=Role.user, nullable=False)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
