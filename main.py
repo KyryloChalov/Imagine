@@ -54,10 +54,10 @@ app.mount("/image", StaticFiles(directory=image_directory), name="image")
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="static")
 
-app.include_router(auth.auth_router)
-app.include_router(users.router)
-app.include_router(images.router)
-app.include_router(comments.router)
+app.include_router(auth.auth_router, prefix="/api")
+app.include_router(users.router, prefix="/api")
+app.include_router(images.router, prefix="/api")
+app.include_router(comments.router, prefix="/api")
 
 
 @app.get("/")

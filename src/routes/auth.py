@@ -10,7 +10,7 @@ from src.schemas.user import UserSchema, TokenSchema, UserResponse, RequestEmail
 from src.services.auth import auth_service
 from src.services.email import send_email, send_reset_passw_email
 
-auth_router = APIRouter(prefix='/api/auth', tags=['auth'])
+auth_router = APIRouter(prefix='/auth', tags=['auth'])
 get_refresh_token = HTTPBearer()
 
 

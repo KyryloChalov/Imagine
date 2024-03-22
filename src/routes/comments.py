@@ -52,7 +52,7 @@ async def edit_comment(user: User = Depends(auth_service.get_current_user)):
     response_model=UserResponse,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
-async def post_comment(user: User = Depends(auth_service.get_current_user)):
+async def delete_comment(user: User = Depends(auth_service.get_current_user)):
     ...
     """
     Видалити коментар 
