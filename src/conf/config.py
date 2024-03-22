@@ -1,11 +1,12 @@
 from typing import Any
 
+# from pydantic import ConfigDict, field_validator, EmailStr
+# # from pydantic import field_validator, EmailStr
+
+# # from pydantic_settings import BaseSettings
+# from pydantic_settings import SettingsConfigDict, BaseSettings
 from pydantic import ConfigDict, field_validator, EmailStr
-# from pydantic import field_validator, EmailStr
-
-# from pydantic_settings import BaseSettings
-from pydantic_settings import SettingsConfigDict, BaseSettings
-
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     PG_DB: str
@@ -35,6 +36,7 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
 
+
     # нахіба?
     @field_validator("ALGORITHM")
     @classmethod
@@ -47,7 +49,7 @@ class Settings(BaseSettings):
     #     extra="ignore", env_file=".env", env_file_encoding="utf-8"
     # )  # noqa
     # model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = ConfigDict(extra='ignore', env_file=".env", env_file_encoding="utf-8")
 
 
 # print("=============== conf 1 ==============")

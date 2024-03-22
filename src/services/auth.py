@@ -2,6 +2,7 @@ import pickle
 from datetime import datetime, timedelta
 from typing import Optional
 
+from fastapi.responses import JSONResponse
 import redis
 from fastapi import Depends, HTTPException, status
 from passlib.context import CryptContext
@@ -134,11 +135,30 @@ class Auth:
             user = await repository_users.get_user_by_email(email, db)
             if user is None:
                 raise credentials_exception
+            
+            # add check that user is logout
+            logout_user = self.cache.get(user.username)
+            if logout_user:
+                logout_user = pickle.loads(logout_user)
+                print(logout_user)
+                print(token)
+                if logout_user == token:
+                    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Current user is logout"})
+            
             self.cache.set(user_hash, pickle.dumps(user))
             self.cache.expire(user_hash, 60)
         else:
             print("User from cache")
             user = pickle.loads(user)
+            # add check that user is logout
+            logout_user = self.cache.get(user.username)
+            if logout_user:
+                logout_user = pickle.loads(logout_user)
+                print(logout_user)
+                print(token)
+                if logout_user == token:
+                    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "Current user is logout"})
+            
         return user
     
     def create_email_token(self, data: dict):

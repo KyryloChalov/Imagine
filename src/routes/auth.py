@@ -1,8 +1,10 @@
 import pickle
+from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, status, Path, Query, Security, BackgroundTasks, Request
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.models.models import User
 from src.database.db import get_db
 from src.conf import messages
 from src.repository import users as repositories_users
@@ -64,25 +66,25 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
     await repositories_users.update_token(user, refresh_token, db)
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
-@auth_router.post("/logout",  response_model=TokenSchema)
-async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    ...
+@auth_router.post('/logout')
+async def logout(token: Annotated[str, Depends(auth_service.oauth2_scheme)], user: User = Depends(auth_service.get_current_user)):
     """
-    Вихід
-    201 або помилку
+    The logout function is used to logout a user.
+        It takes in the token of the user and returns a message that says &quot;Successfully logged out.&quot;
+    
+    
+    :param token: Annotated[str: Pass the token to the logout function
+    :param Depends(auth_service.oauth2_scheme)]: Get the token from the request header
+    :param user: User: Get the current user
+    :return: The message &quot;logout successful&quot; as a json object
+    :doc-author: Trelent
     """
-    # user = await repositories_users.get_user_by_email(body.username, db)
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=messages.INVALID_EMAIL)
-    # if not user.confirmed:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=messages.EMAIL_NOT_CONFIRMED)
-    # if not auth_service.verify_password(body.password, user.password):
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=messages.INVALID_PASSWORD)
-    # # Generate JWT
-    # access_token = await auth_service.create_access_token(data={"sub": user.email})
-    # refresh_token = await auth_service.create_refresh_token(data={"sub": user.email})
-    # await repositories_users.update_token(user, refresh_token, db)
-    return # {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+    
+    username = user.username
+    auth_service.cache.set(username, pickle.dumps(token))
+    
+    # auth_service.cache.expire(username, 60)
+    return {"message": messages.LOGOUT}
 
 
 @auth_router.get('/refresh_token',  response_model=TokenSchema)
