@@ -5,7 +5,8 @@ from datetime import date, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-from src.models.models import Contact, User
+# from src.models.models import Contact, User
+from src.models.models import User
 from src.schemas.contact import ContactSchema, ContactUpdateSchema
 
     

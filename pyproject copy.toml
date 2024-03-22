@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "web_team_1"
+name = "Imagine"
 version = "0.1.0"
-description = "FastAPI Learning"
-authors = ["1Oleksandr <kondratiuk.ai@gmail.com>"]
+description = "GoIT WEB Project"
+authors = ["1Oleksandr <kondratiuk.ai@gmail.com>, Kyrylo Chalov <ks7977166@gmail.com>", Yurii Protsenko <elsoul@gmail.com>, Mariia Turbanova <mariya.turbanova@gmail.com>, Oleksiy Maliovanyy <oleksiy.maliovanyy@gmail.com>]
 license = "MIT"
 readme = "README.md"
 

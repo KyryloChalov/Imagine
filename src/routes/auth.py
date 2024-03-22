@@ -64,6 +64,26 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
     await repositories_users.update_token(user, refresh_token, db)
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
+@auth_router.post("/logout",  response_model=TokenSchema)
+async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    ...
+    """
+    Вихід
+    201 або помилку
+    """
+    # user = await repositories_users.get_user_by_email(body.username, db)
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=messages.INVALID_EMAIL)
+    # if not user.confirmed:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=messages.EMAIL_NOT_CONFIRMED)
+    # if not auth_service.verify_password(body.password, user.password):
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=messages.INVALID_PASSWORD)
+    # # Generate JWT
+    # access_token = await auth_service.create_access_token(data={"sub": user.email})
+    # refresh_token = await auth_service.create_refresh_token(data={"sub": user.email})
+    # await repositories_users.update_token(user, refresh_token, db)
+    return # {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+
 
 @auth_router.get('/refresh_token',  response_model=TokenSchema)
 async def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(get_refresh_token),
@@ -160,7 +180,7 @@ async def reset_passw_email(body: RequestEmail, background_tasks: BackgroundTask
         return {"message": messages.CHECK_EMAIL_FOR_UPDATE_PASSWORD}
     else:
         return {"message": messages.USER_WITH_EMAIL_NOT_EXIST}
-    
+
 @auth_router.get('/form_reset_password/{token}')
 async def recieve_conf_reset_passw():
     """
@@ -171,7 +191,7 @@ async def recieve_conf_reset_passw():
     :doc-author: Trelent
     """
     return {"message": messages.RECIVED_CONFIRMATION}
-    
+
 @auth_router.post('/form_reset_password/{token}')
 async def confirmed_reset_passw(body: UserResetPassword, token: str, db: AsyncSession = Depends(get_db)):
     """

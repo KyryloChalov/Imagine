@@ -74,4 +74,4 @@ class User(Base):
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned_at: Mapped[date] = mapped_column(Date, nullable=True)
-    # avatar: Mapped[str] = mapped_column(String(255), nullable=True)
+    avatar: Mapped[str] = mapped_column(String(255), nullable=True)

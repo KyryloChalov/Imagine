@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Homework WEB-14</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('image', path='/favicon.ico') }}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('css', path='/styles.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- mainpage -->
+    <div class="main-page">
+      <div class="wrapper">
+        <div class="main-page-left-side">
+          <!-- logo -->
+          <img
+            src="{{ url_for('image', path='/goit-logo.svg') }}"
+            alt="GO-IT logo"
+            class="logo"
+          />
+
+          <!-- main-page-text-container -->
+          <div class="main-page-text-container">
+            <p class="ordinary-text">{{welcome}}</p>
+            <p class="good-evening">{{message}}</p>
+
+            <h1 class="main-text">{{about_app}}</h1>
+
+            <a href="http://localhost:8000/docs">
+              <button class="main-page-btn">Swagger doc</button>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- goose-selfie -->
+  </body>
+</html>
