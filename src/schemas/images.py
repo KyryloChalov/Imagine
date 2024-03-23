@@ -5,6 +5,14 @@ from datetime import datetime, date
 
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, validator
 
+class RatingSchema(BaseModel):
+    rating: int = Field(ge=1, le=5)
+
+    @validator("rating")
+    def rating_number(cls, rating_num):
+        if (rating_num < 1) or (rating_num > 5):
+            raise ValueError("Rating must be between 1 and 5")
+        return rating_num
 
 class ContactSchema(BaseModel):
     name: str = Field(max_length=30)
@@ -36,6 +44,3 @@ class ContactResponse(BaseModel):
     info: str | None
     
     model_config = ConfigDict(from_attributes = True)  # noqa
-
-    # class Config:
-    #     from_attributes = True

@@ -26,38 +26,36 @@ photo_m2m_tag = Table(
     Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
 )
 
-# class DateField():
-#     created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
-#     updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+class Datefield():
+    created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
+    updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
     
-class Photo(Base):
+class Photo(Base, Datefield):
     __tablename__ = "photos"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     path: Mapped[str] = mapped_column(String(250), nullable=False)
     description: Mapped[str] =  mapped_column(String(250), nullable=False)
     path_tranform: Mapped[str] = mapped_column(String(250))
-    created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
+    # created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
     # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
     
-    # b_date = column_property(func.to_date(func.concat(datetime.today().year, '-', extract('month', birthday), '-', extract('day', birthday)), 'YYYY-MM-DD'))
-    
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'), nullable=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
     user: Mapped["User"] = relationship("User", backref="photos", lazy="joined")
+    rating: Mapped["Rating"] = relationship("Rating", backref='photos', lazy="joined") 
     tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
     
     
-class Comment(Base):
+class Comment(Base, Datefield):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     opinion: Mapped[str] = mapped_column(String(250), nullable=False)
-    rating: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
-    updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+    # rating: Mapped[int] = mapped_column(Integer, nullable=False)
+    # created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
+    # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
     
-    
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'), nullable=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
     user: Mapped["User"] = relationship("User", backref="comments", lazy="joined")
-    photo_id: Mapped[int] = mapped_column(ForeignKey('photos.id'), nullable=True)
+    photo_id: Mapped[int] = mapped_column(ForeignKey('photos.id'), nullable=False)
     photo: Mapped["Photo"] = relationship("Photo", backref="comments", lazy="joined")
 
 
@@ -67,19 +65,28 @@ class Role(enum.Enum):
     user: str = "user"
 
 
-class User(Base):
+class User(Base, Datefield):
     __tablename__ = 'users'
     id: Mapped[uuid.UUID] = mapped_column(generics.GUID(), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(50), nullable=True)
     username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
-    created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
-    updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
-    
+    # created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
+    # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
     refresh_token: Mapped[str] = mapped_column(String(255), nullable=True)
     role: Mapped[Enum] = mapped_column('role', Enum(Role), default=Role.user, nullable=False)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned_at: Mapped[date] = mapped_column(Date, nullable=True)
     avatar: Mapped[str] = mapped_column(String(255), nullable=True)
+    
+class Rating(Base, Datefield):
+    __tablename__ = 'ratings'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    rating: Mapped[int] = mapped_column(nullable=False)
+    photo_id: Mapped[int] = mapped_column(ForeignKey('photos.id'), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
+    user: Mapped["User"] = relationship("User", backref="ratings")
+    # created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
+    # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
