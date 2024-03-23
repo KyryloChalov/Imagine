@@ -1,0 +1,8 @@
+USERNAME_MIN_LENGTH = 3  # TODO: replace in code
+USERNAME_MAX_LENGTH = 30  # TODO: replace in code
+
+PASSWORD_MIN_LENGTH = 6  # TODO: replace in code
+PASSWORD_MAX_LENGTH = 30  # TODO: replace in code
+
+COMMENT_MIN_LENGTH = 3
+COMMENT_MAX_LENGTH = 255
