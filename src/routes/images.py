@@ -107,6 +107,30 @@ async def change_image(user: User = Depends(auth_service.get_current_user)):
     """
     return user
 
+@router.post(
+    "/{image_id}/rating/",
+    response_model=UserResponse,
+    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+)
+async def put_rating(user: User = Depends(auth_service.get_current_user)):
+    ...
+    """
+    Поставити рейтинг
+    """
+    return user
+
+@router.delete(
+    "/{image_id}/rating/",
+    response_model=UserResponse,
+    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+)
+async def delete_rating(user: User = Depends(auth_service.get_current_user)):
+    ...
+    """
+    Видалити рейтинг
+    """
+    return user
+
 
 @router.get(
     "/search/",
