@@ -1,11 +1,14 @@
 from fastapi import Depends
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from libgravatar import Gravatar
 
 from src.database.db import get_db
-from src.models.models import User
+from src.models.models import User, Photo
 from src.schemas.user import UserSchema
+from src.services.auth import auth_service
+
+
 
 
 async def get_user_by_email(email: str, db: AsyncSession = Depends(get_db)):
@@ -105,3 +108,27 @@ async def update_password(user: User, password: str, db: AsyncSession):
     """
     user.password = password
     await db.commit()
+    
+async def get_all_users(limit: int, offset: int, db: AsyncSession):
+    """
+    The get_all_contacts function returns a list of all contacts in the database.
+    
+    :param limit: int: Limit the number of contacts returned
+    :param offset: int: Specify the offset of the first row to return
+    :param db: AsyncSession: Pass in the database session to use
+    :return: A list of contact objects
+    :doc-author: Trelent
+    """
+    stmt = select(User).offset(offset).limit(limit)
+    users = await db.execute(stmt)
+    return users.scalars().all()
+    
+async def get_info_by_username(username: str, db: AsyncSession):
+    
+    stmt = select(User).filter_by(username=username)
+    user = await db.execute(stmt)
+    user = user.scalar_one_or_none()
+    statement = select(func.count()).select_from(Photo).filter_by(user_id=user.id)
+    num_photos: int = await db.execute(statement)
+    num_photos = num_photos.scalar()
+    return user, num_photos
