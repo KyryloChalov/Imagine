@@ -15,7 +15,7 @@ import uvicorn
 
 from src.database.db import get_db
 from src.conf.config import config
-from src.routes import auth, users, images, comments
+from src.routes import auth, users, images, comments, seed
 
 
 @asynccontextmanager
@@ -61,6 +61,7 @@ app.include_router(auth.auth_router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(images.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
+# app.include_router(seed.router, prefix="")
 
 
 @app.get("/")
