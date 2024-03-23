@@ -19,9 +19,11 @@ class RoleAccess:
         :return: A function that takes a request and user as arguments
         :doc-author: Trelent
         """
-        print(user.role, self.allowed_roles)
-        if user.role not in self.allowed_roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="FORBIDDEN"
-            )
+        if user:
+            print(user)
+        # print(user.role, self.allowed_roles)
+            if user.role not in self.allowed_roles:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="FORBIDDEN"
+                )
