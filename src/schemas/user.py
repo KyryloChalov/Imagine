@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
@@ -15,13 +16,17 @@ class UserSchema(BaseModel):
 
 class UserResponse(BaseModel):
     id: uuid.UUID
-    name: str
+    name: str | None
     username: str
     email: EmailStr
     avatar: str | None
     role: Role
+    created_at: datetime
     
     model_config = ConfigDict(from_attributes = True)  # noqa
+    
+class AboutUser(UserResponse):
+    num_images: int
 
 
 class TokenSchema(BaseModel):

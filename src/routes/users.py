@@ -2,16 +2,17 @@ import pickle
 
 import cloudinary
 import cloudinary.uploader
-from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, Query, status, UploadFile, File
 
 from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
-from src.models.models import User
-from src.schemas.user import UserResponse
+from src.models.models import User, Role
+from src.schemas.user import UserResponse, AboutUser
 from src.services.auth import auth_service
 from src.conf.config import config
+from src.services.roles import RoleAccess
 from src.repository import users as repositories_users
 
 
@@ -23,37 +24,40 @@ cloudinary.config(
     secure=True,
 )
 
+access_to_route_all = RoleAccess([Role.admin, Role.moderator])
 
 @router.get(
-    "/", response_model=UserResponse, dependencies=[Depends(RateLimiter(times=1, seconds=20))])
-async def get_all_users(user: User = Depends(auth_service.get_current_user)):
-    ...
-    """
-    Всі користувачі
-    Пагінований список користувачів
-    """
-    return user
+    "/", response_model=list[UserResponse], dependencies=[Depends(access_to_route_all)])
+async def get_all_users(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
+                    db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
 
 
-@router.get(
-    "/{username}",
-    response_model=UserResponse,
-    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-)
-async def get_user(user: User = Depends(auth_service.get_current_user)):
-    ...
     """
-    Публічна інформація про користувача або помилка
+    The get_all_users function returns a list of all users in the database.
+        ---
+        get:
+            summary: Get all users from the database.  This is an admin or moderator-only function, and will return a 403 error if called by non-admin user.
+            description: Returns a list of all users in the database, with optional limit and offset parameters to control pagination (defaults are 10 records per page).  This is an admin-only function, and will return a 403 error if called by non-admin user.  
+    
+    :param limit: int: Limit the number of users returned
+    :param ge: Set a minimum value for the limit parameter
+    :param le: Limit the number of users that can be returned in a single request
+    :param offset: int: Offset the number of users returned by the limit: int parameter
+    :param ge: Specify a minimum value for the parameter
+    :param db: AsyncSession: Get the database session
+    :param user: User: Get the current user
+    :return: A list of users, and the get_all_users function is decorated with @router
+    :doc-author: Trelent
     """
-    return user
+    users = await repositories_users.get_all_users(limit, offset, db)
+    return users
 
-# post?
 @router.patch(
-    "/{username}",
+    "/{id}",
     response_model=UserResponse,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
-async def get_me(user: User = Depends(auth_service.get_current_user)):
+async def update_user(db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
     ...
     """
     Банимо користувача
@@ -64,34 +68,33 @@ async def get_me(user: User = Depends(auth_service.get_current_user)):
     return user
 
 
-@router.post(
-    "/me",
-    response_model=UserResponse,
-    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-)
-async def edit_me(user: User = Depends(auth_service.get_current_user)):
-    ...
-    """
-    Редагувати свій профіль 
-    (створення нового профілю при реєстрації теж тут?)
-    201 або помилку
-    """
-    return user
+# @router.post(
+#     "/me",
+#     response_model=UserResponse,
+#     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+# )
+# async def edit_me(user: User = Depends(auth_service.get_current_user)):
+#     ...
+#     """
+#     Редагувати свій профіль 
+#     201 або помилку
+#     """
+#     return user
 
 
-@router.patch(
-    "/change_role/{user_id}",
-    response_model=UserResponse,
-    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-)
-async def change_user_role(user: User = Depends(auth_service.get_current_user)):
-    ...
-    """
-    Зміна ролі користувача
-    201 або помилку
-    admin, moderator
-    """
-    return user
+# @router.patch(
+#     "/change_role/{user_id}",
+#     response_model=UserResponse,
+#     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+# )
+# async def change_user_role(user: User = Depends(auth_service.get_current_user)):
+#     ...
+#     """
+#     Зміна ролі користувача
+#     201 або помилку
+#     admin, moderator
+#     """
+#     return user
 
 
 @router.get(
@@ -109,6 +112,14 @@ async def get_me(user: User = Depends(auth_service.get_current_user)):
     """
     return user
 
+@router.get("/{username}", response_model=AboutUser)
+async def get_username_info(username: str, db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+    
+    user, num_images = await repositories_users.get_info_by_username(username, db)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOT FOUND")
+    user.num_images = num_images
+    return user
 
 @router.patch("/avatar", response_model=UserResponse, dependencies=[Depends(RateLimiter(times=1, seconds=20))])
 async def update_avatar_url(file: UploadFile = File(), 

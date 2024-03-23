@@ -35,7 +35,7 @@ class Photo(Base, Datefield):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     path: Mapped[str] = mapped_column(String(250), nullable=False)
     description: Mapped[str] =  mapped_column(String(250), nullable=False)
-    path_tranform: Mapped[str] = mapped_column(String(250))
+    path_tranform: Mapped[str] = mapped_column(String(250), nullable=True)
     # created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
     # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
     
