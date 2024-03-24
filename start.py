@@ -6,6 +6,7 @@ commands = [
     "poetry update package",
     "docker pull postgres",
     "docker-compose up -d",
+    "alembic",
     "alembic upgrade head",
     "uvicorn main:app --host localhost --port 8000 --reload",
 ]

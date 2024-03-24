@@ -1,51 +1,94 @@
 from fastapi import Depends
-from libgravatar import Gravatar
-
-# from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
 from src.database.db import get_db
 from src.models.models import User
+from src.repository import users as repositories_users
 from src.schemas.user import UserSchema
 from src.services.auth import auth_service
-from typing import List
 
 
-def create_users(count: int, db: AsyncSession = Depends(get_db)):
+async def seed_basic_users(db: AsyncSession = Depends(get_db)):
+    """
+    генерація базових фейкових юзерів "admin", "moderator", "user", "guest"
+    які мають відповідні імена "admin", "moderator", "user", "guest"
+    та відповідні ролі "admin", "moderator", "user", "user"
+    "guest" відрізняється від "user" тим, що має confirmed=False
+    email'и - {"ім'я"}@gmail.com
+    паролі у всіх однакові: "123456"
+    в разі наявності в базі юзерів с такими іменами, до імен додається "_{N}"
+    N - ціле число
+    upd: 
+    додав юзера "banned" - він як звичайний "user", тільки забанений
+    """
+    roles = ["admin", "moderator", "user", "guest", "banned"]
+    offset = 0
 
-    print("============= create_users 1 ===========")
-    number_user = 5
-    # number_user = len(db.query(User).all()) + 1
-    print(f"{number_user = }")
+    for role in roles:
 
-    for num in range(number_user, (number_user + count)):
+        while await repositories_users.get_user_by_email(
+            f"{role + (str('_' + str(offset)) if offset > 0 else '')}@gmail.com", db
+        ):
+            offset += 1
+
+        name_ = f"{role + (str("_" + str(offset)) if offset > 0 else "")}"
+
         body = UserSchema(
-            name="Fake_user",
-            username=f"user_{str(num)}",
-            email=f"user_{str(num)}@gmail.com",
+            name=name_,
+            username=name_,
+            email=name_ + "@gmail.com",
             password="123456",
         )
+
         body.password = auth_service.get_password_hash(body.password)
 
-        avatar = None
-        try:
-            g = Gravatar(body.email)
-            avatar = g.get_image()
-        except Exception as e:
-            print(e)
-        new_user = User(**body.model_dump(), avatar=avatar, confirmed=True)
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
+        await repositories_users.create_user(body, db)
+
+        user = await repositories_users.get_user_by_email(body.email, db)
+
+        if role == roles[4]:
+            user.banned = True
+        if role != roles[3]:
+            user.confirmed = True
+        if role in [roles[0], roles[1]]:
+            user.role = role
+
+        await db.commit()
 
 
-def seed_users(count_users: int = 3):
-    print("============= seed_users 1 ===========")
-    create_users(count_users, db=get_db)
+async def seed_users(count_users: int = 3, db: AsyncSession = Depends(get_db)):
+    """
+    генерація кількох фейкових юзерів (за замовченням: count_users: int = 3)
+    вони мають імена виду user_N, де N - ціле число,
+    яке залежить від кількості юзерів, що вже є в базі
+    поле email иає вигляд user_N@gmail.com
+    пароль для всіх однаковий: "123456"
+    поле confirmed має значення True
+    решта полів - за замовченням"""
 
+    result = await db.execute(select(User))
+    users = result.scalars().all()
+    number_user = len(users) + 1
+    offset = 0
 
-def main():
-    seed_users()
+    for num in range(number_user, (number_user + count_users)):
 
+        while await repositories_users.get_user_by_email(
+            f"user_{str(num + offset)}@gmail.com", db
+        ):
+            offset += 1
 
-if __name__ == "__main__":
-    main()
+        name_ = f"user_{str(num + offset)}"
+
+        body = UserSchema(
+            name=name_,
+            username=name_,
+            email=name_ + "@gmail.com",
+            password="123456",
+        )
+
+        body.password = auth_service.get_password_hash(body.password)
+
+        await repositories_users.create_user(body, db)
+        await repositories_users.confirmed_email(body.email, db)
