@@ -25,7 +25,7 @@ router = APIRouter(prefix="/comments", tags=["comments"])
 # Access to the operations by roles
 access_get = RoleAccess([Role.admin, Role.moderator, Role.user])
 access_update = RoleAccess([Role.admin, Role.moderator, Role.user])
-access_delete = RoleAccess([Role.admin, Role.moderator, Role.user])
+access_delete = RoleAccess([Role.admin, Role.moderator])
 access_admin = RoleAccess([Role.admin])
 access_comment = RoleAccess([Role.user])
 
