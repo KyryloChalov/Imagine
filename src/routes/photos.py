@@ -2,9 +2,8 @@ import pickle
 import time
 from typing import Annotated
 
-import cloudinary
-import cloudinary.uploader
-from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
+
+from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form
 
 from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,12 +19,6 @@ from src.repository import photos as repositories_photos
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
-cloudinary.config(
-    cloud_name=config.CLOUDINARY_NAME,
-    api_key=config.CLOUDINARY_API_KEY,
-    api_secret=config.CLOUDINARY_API_SECRET,
-    secure=True,
-)
 
 
 @router.get(
@@ -49,9 +42,13 @@ async def get_all_photos(user: User = Depends(auth_service.get_current_user)):
     dependencies=[Depends(RateLimiter(times=10, seconds=20))],
 )
 async def put_photo(
-    photo_description: str = None,
+    photo_description: str | None = Form(
+        None, description="Add a description to your photo (string)"
+    ),
     file: UploadFile = File(),
-    tags: list = [],
+    tags: list[str] = Form(
+        None, description="Tags to associate with the photo (list of strings)"
+    ),
     user: User = Depends(auth_service.get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -59,25 +56,16 @@ async def put_photo(
     Додати світлину
     201 або помилку
     """
+    list_tags = tags[0].split(",")
 
-    cloudinary.config(
-        cloud_name=config.CLOUDINARY_NAME,
-        api_key=config.CLOUDINARY_API_KEY,
-        api_secret=config.CLOUDINARY_API_SECRET,
-        secure=True,
-    )
-
-    r = cloudinary.uploader.upload(
-        file.file, public_id=f"{user.id}/{int(time.time())}", overwrite=True
-    )
-    src_url = cloudinary.CloudinaryImage(f"{user.id}/{int(time.time())}")
-    print(src_url)
-    add_photo = await repositories_photos.create_photo(
-        src_url,
+    new_photo = await repositories_photos.create_photo(
+        file,
         photo_description,
+        user,
         db,
+        list_tags,
     )
-    return add_photo
+    return new_photo
 
 
 @router.get(
