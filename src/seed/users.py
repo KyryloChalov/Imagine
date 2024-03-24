@@ -28,11 +28,11 @@ async def seed_basic_users(db: AsyncSession = Depends(get_db)):
     for role in roles:
 
         while await repositories_users.get_user_by_email(
-            f"{role + (str('_' + str(offset)) if offset > 0 else '')}@gmail.com", db
+                f"{role + (str('_' + str(offset)) if offset > 0 else '')}@gmail.com", db
         ):
             offset += 1
 
-        name_ = f"{role + (str("_" + str(offset)) if offset > 0 else "")}"
+        name_ = f'{role + (str("_" + str(offset)) if offset > 0 else "")}'
 
         body = UserSchema(
             name=name_,
@@ -75,7 +75,7 @@ async def seed_users(count_users: int = 3, db: AsyncSession = Depends(get_db)):
     for num in range(number_user, (number_user + count_users)):
 
         while await repositories_users.get_user_by_email(
-            f"user_{str(num + offset)}@gmail.com", db
+                f"user_{str(num + offset)}@gmail.com", db
         ):
             offset += 1
 
