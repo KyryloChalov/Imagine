@@ -13,7 +13,7 @@ fake_data: Faker = Faker(["uk_UA", "en_US"])
 
 async def seed_tags(count: int = 10, db: AsyncSession = Depends(get_db)):
     """
-    генерація кількох фейкових tags (за замовченням: count_tags: int = 10)
+    генерація кількох фейкових tags (за замовченням: count: int = 10)
     """
     for _ in range(count):
         name_tag = ""

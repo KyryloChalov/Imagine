@@ -25,7 +25,7 @@ from src.conf.constants import (
     TAG_MAX_LENGTH,
     PHOTO_PATH_LENGTH,
     TRANSFORM_PATH_LENGTH,
-    PHOTO_DESCRIPTION_LENGTH,
+    PHOTO_MAX_DESCRIPTION_LENGTH,
     COMMENT_MAX_LENGTH,
     USERNAME_MAX_LENGTH,
     NAME_MAX_LENGTH,
@@ -68,7 +68,7 @@ class Photo(Base, Datefield):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     path: Mapped[str] = mapped_column(String(PHOTO_PATH_LENGTH), nullable=False)
     description: Mapped[str] = mapped_column(
-        String(PHOTO_DESCRIPTION_LENGTH), nullable=False
+        String(PHOTO_MAX_DESCRIPTION_LENGTH), nullable=False
     )
     path_transform: Mapped[str] = mapped_column(
         String(TRANSFORM_PATH_LENGTH), nullable=True
