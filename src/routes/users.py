@@ -26,19 +26,23 @@ cloudinary.config(
 
 access_to_route_all = RoleAccess([Role.admin, Role.moderator])
 
+
 @router.get(
-    "/", response_model=list[UserResponse], dependencies=[Depends(access_to_route_all)])
-async def get_all_users(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
-                    db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
-
-
+    "/", response_model=list[UserResponse], dependencies=[Depends(access_to_route_all)]
+)
+async def get_all_users(
+    limit: int = Query(10, ge=10, le=500),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(auth_service.get_current_user),
+):
     """
     The get_all_users function returns a list of all users in the database.
         ---
         get:
             summary: Get all users from the database.  This is an admin or moderator-only function, and will return a 403 error if called by non-admin user.
-            description: Returns a list of all users in the database, with optional limit and offset parameters to control pagination (defaults are 10 records per page).  This is an admin-only function, and will return a 403 error if called by non-admin user.  
-    
+            description: Returns a list of all users in the database, with optional limit and offset parameters to control pagination (defaults are 10 records per page).  This is an admin-only function, and will return a 403 error if called by non-admin user.
+
     :param limit: int: Limit the number of users returned
     :param ge: Set a minimum value for the limit parameter
     :param le: Limit the number of users that can be returned in a single request
@@ -52,12 +56,16 @@ async def get_all_users(limit: int = Query(10, ge=10, le=500), offset: int = Que
     users = await repositories_users.get_all_users(limit, offset, db)
     return users
 
+
 @router.patch(
     "/{id}",
     response_model=UserResponse,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
-async def update_user(db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
+async def update_user(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(auth_service.get_current_user),
+):
     ...
     """
     Банимо користувача
@@ -76,7 +84,7 @@ async def update_user(db: AsyncSession = Depends(get_db), user: User = Depends(a
 # async def edit_me(user: User = Depends(auth_service.get_current_user)):
 #     ...
 #     """
-#     Редагувати свій профіль 
+#     Редагувати свій профіль
 #     201 або помилку
 #     """
 #     return user
@@ -98,44 +106,60 @@ async def update_user(db: AsyncSession = Depends(get_db), user: User = Depends(a
 
 
 @router.get(
-    "/me", response_model=UserResponse, dependencies=[Depends(RateLimiter(times=1, seconds=20))])
+    "/me",
+    response_model=UserResponse,
+    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+)
 async def get_me(user: User = Depends(auth_service.get_current_user)):
     """
     The get_me function returns the current user's information.
         get:
             summary: Get the current user's information.
             description: Returns a UserResponse object containing all of the current user's info, including their username and email address.  This endpoint is protected by JWT authentication, so you must provide a valid token in order to access it.
-    
+
     :param user: User: Specify the type of data that will be returned
     :return: The current user
     :doc-author: Trelent
     """
     return user
 
+
 @router.get("/{username}", response_model=AboutUser)
-async def get_username_info(username: str, db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):
-    
-    user, num_images = await repositories_users.get_info_by_username(username, db)
+async def get_username_info(
+    username: str,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(auth_service.get_current_user),
+):
+
+    user, num_photos = await repositories_users.get_info_by_username(username, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOT FOUND")
-    user.num_images = num_images
+    user.num_photos = num_photos
     return user
 
-@router.patch("/avatar", response_model=UserResponse, dependencies=[Depends(RateLimiter(times=1, seconds=20))])
-async def update_avatar_url(file: UploadFile = File(), 
-                            user: User = Depends(auth_service.get_current_user), db: AsyncSession = Depends(get_db)):
+
+@router.patch(
+    "/avatar",
+    response_model=UserResponse,
+    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+)
+async def update_avatar_url(
+    file: UploadFile = File(),
+    user: User = Depends(auth_service.get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     """
     The update_avatar_url function takes a file and user as input,
         uploads the file to cloudinary, updates the avatar_url in the database
         and returns a UserResponse object.
-    
+
     :param file: UploadFile: Upload the file to cloudinary
     :param user: User: Get the current user
     :param db: AsyncSession: Get the database session
     :return: The user object with the updated avatar_url
     :doc-author: Trelent
     """
-    public_id = f"Images/{user.email}"
+    public_id = f"photos/{user.email}"
     res = cloudinary.uploader.upload(file.file, public_id=public_id, owerite=True)
     res_url = cloudinary.CloudinaryImage(public_id).build_url(
         width=250, height=250, crop="fill", version=res.get("version")

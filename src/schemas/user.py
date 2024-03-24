@@ -1,17 +1,28 @@
 import uuid
 from datetime import datetime
 from typing import Optional
-
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 from src.models.models import Role
+from src.conf.constants import (
+    NAME_MIN_LENGTH,
+    NAME_MAX_LENGTH,
+    USERNAME_MIN_LENGTH,
+    USERNAME_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    PASSWORD_MAX_LENGTH,
+)
 
 
 class UserSchema(BaseModel):
-    name: str = Field(min_length=3, max_length=50)
-    username: str = Field(min_length=3, max_length=50)
+    name: str = Field(min_length=NAME_MIN_LENGTH, max_length=NAME_MAX_LENGTH)
+    username: str = Field(
+        min_length=USERNAME_MIN_LENGTH, max_length=USERNAME_MAX_LENGTH
+    )
     email: EmailStr
-    password: str = Field(min_length=6, max_length=8)
+    password: str = Field(
+        min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
+    )
 
 
 class UserResponse(BaseModel):
@@ -22,21 +33,28 @@ class UserResponse(BaseModel):
     avatar: str | None
     role: Role
     created_at: datetime
-    
-    model_config = ConfigDict(from_attributes = True)  # noqa
-    
+
+    model_config = ConfigDict(from_attributes=True)  # noqa
+
+
 class AboutUser(UserResponse):
-    num_images: int
+    num_photos: int
 
 
 class TokenSchema(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
-    
+
+
 class RequestEmail(BaseModel):
     email: EmailStr
-    
+
+
 class UserResetPassword(BaseModel):
-    password1: str = Field(min_length=6, max_length=8)
-    password2: str = Field(min_length=6, max_length=8)
+    password1: str = Field(
+        min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
+    )
+    password2: str = Field(
+        min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
+    )

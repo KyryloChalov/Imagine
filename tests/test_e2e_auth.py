@@ -152,7 +152,7 @@ async def test_get_to_reset_password(get_email_token, client):
     response = client.get(f"api/auth/form_reset_password/{token}")
     assert response.status_code == 200, response.text
     data = response.json()
-    assert data["message"] == messages.RECIVED_CONFIRMATION
+    assert data["message"] == messages.RECEIVED_CONFIRMATION
     
 def test_reset_password(client, get_email_token):
     token = get_email_token

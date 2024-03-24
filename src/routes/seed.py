@@ -25,9 +25,3 @@ async def seed_fake_users(number_users: int = 3, db: AsyncSession = Depends(get_
 async def seed_fake_tags(number_tags: int = 10, db: AsyncSession = Depends(get_db)):
     await seed_tags(number_tags, db)
     return {"message": f"You have {number_tags} new fake Tags"}
-
-
-# @router.post("/contacts")
-# async def seed_fake_contacts(number_contacts: int = 10):
-#     seed_contacts(number_contacts)
-#     return {"message": f"You have {number_contacts} new fake Contacts"}

@@ -7,16 +7,17 @@ from datetime import date, timedelta
 # from sqlalchemy.sql.sqltypes import Date
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.conf.messages import SOMETHING_WRONG, PHOTO_SUCCESSFULLY_ADDED
 from src.models.models import Photo
 
 
-async def create_image(
+async def create_photo(
     path: str,
     description: str,
     db: AsyncSession,
 ):
     """
-    The create_image function save data of a new image in cloud storage.
+    The create_photo function save data of a new photo in cloud storage.
 
     :param body: ContactSchema: Validate the request body
     :param db: AsyncSession: Pass the database session to the function
@@ -24,15 +25,15 @@ async def create_image(
     :return: A contact object
     :doc-author: Trelent
     """
-    image = Photo(
+    photo = Photo(
         path=path,
         description=description,
-        path_tranform=None,
+        path_transform=None,
     )
     try:
-        db.add(image)
+        db.add(photo)
         await db.commit()
-        await db.refresh(image)
+        await db.refresh(photo)
     except Exception as e:
-        return {"error": "Something went wrong!", "Exception": e}
-    return {"success mesasge": "Image succefully added!"}
+        return {"error": SOMETHING_WRONG, "Exception": e}
+    return {"success message": PHOTO_SUCCESSFULLY_ADDED}

@@ -10,12 +10,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
 import redis.asyncio as redis
 import uvicorn
 
+from src.routes import photos
 from src.database.db import get_db
 from src.conf.config import config
-from src.routes import auth, users, images, comments, seed
+from src.routes import auth, users, comments, seed
 
 
 @asynccontextmanager
@@ -59,7 +61,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="s
 
 app.include_router(auth.auth_router, prefix="/api")
 app.include_router(users.router, prefix="/api")
-app.include_router(images.router, prefix="/api")
+app.include_router(photos.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
 app.include_router(seed.router, prefix="")
 
@@ -78,11 +80,6 @@ async def read_root(request: Request):
             "about_app": "REST API",
         },
     )
-
-
-# @app.get("/")
-# def read_root():
-#     return {"message": "Imagine from _magic - буде index.html"}
 
 
 @app.get("/api/healthchecker")

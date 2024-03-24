@@ -19,7 +19,7 @@ router = APIRouter(prefix="/comments", tags=["comments"])
 
 
 @router.post(
-    "/{image_id}/comments",
+    "/{photo_id}/comments",
     response_model=UserResponse,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
@@ -32,8 +32,9 @@ async def post_comment(user: User = Depends(auth_service.get_current_user)):
     """
     return user
 
+
 @router.patch(
-    "/{image_id}/comments/{comment_id}",
+    "/{photo_id}/comments/{comment_id}",
     response_model=UserResponse,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
@@ -48,7 +49,7 @@ async def edit_comment(user: User = Depends(auth_service.get_current_user)):
 
 
 @router.delete(
-    "/{image_id}/comments/{comment_id}",
+    "/{photo_id}/comments/{comment_id}",
     response_model=UserResponse,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )

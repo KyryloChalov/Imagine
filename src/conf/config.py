@@ -1,7 +1,8 @@
 from typing import Any
 
-from pydantic import ConfigDict, field_validator, EmailStr
-from pydantic_settings import BaseSettings
+from pydantic import field_validator  # , EmailStr, ConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     PG_DB: str
@@ -31,7 +32,6 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
 
-
     # нахіба?
     @field_validator("ALGORITHM")
     @classmethod
@@ -40,17 +40,12 @@ class Settings(BaseSettings):
             raise ValueError("algorithm must be HS256 or HS512")
         return v
 
-    # model_config = SettingsConfigDict(
-    #     extra="ignore", env_file=".env", env_file_encoding="utf-8"
-    # )  # noqa
-    # model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-    model_config = ConfigDict(extra='ignore', env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        extra="ignore", env_file=".env", env_file_encoding="utf-8"
+    )  # noqa
+
+    # Incompatible types in assignment (expression has type "ConfigDict", base class "BaseSettings" defined the type as "SettingsConfigDict")
+    # model_config = ConfigDict(extra="ignore", env_file=".env", env_file_encoding="utf-8")
 
 
-# print("=============== conf 1 ==============")
 config = Settings()
-# print("=============== conf 2 ==============")
-
-
-print(f"===============   {config.DB_URL = }")
-# print(f"=== > {config = }")

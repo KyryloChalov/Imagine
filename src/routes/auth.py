@@ -266,7 +266,7 @@ async def recieve_conf_reset_passw():
     :return: A dictionary with a message
     :doc-author: Trelent
     """
-    return {"message": messages.RECIVED_CONFIRMATION}
+    return {"message": messages.RECEIVED_CONFIRMATION}
 
 
 @auth_router.post("/form_reset_password/{token}")

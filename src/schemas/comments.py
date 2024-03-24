@@ -1,4 +1,5 @@
 """скопіював з contacts"""
+
 import re
 from typing import Optional
 from datetime import datetime, date

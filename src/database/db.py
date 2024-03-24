@@ -1,21 +1,15 @@
-# print(f"====== db 1 ========= ")
-from os import environ
 import contextlib
 
-
+from os import environ
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import NullPool
-
 
 from src.conf.config import config
 
 TESTING = environ.get("TESTING")
-# print(f"=== > {TESTING = }")
 
-
-class Base(DeclarativeBase): ...
-
+# from sqlalchemy.orm import DeclarativeBase # переставив до models.models.py
+# class Base(DeclarativeBase): ...
 
 class DatabaseSessionManager:
     def __init__(self, url: str):
