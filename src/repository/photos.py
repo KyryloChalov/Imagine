@@ -61,17 +61,10 @@ async def create_photo(
         photofile.file, public_id=public_photo_id, overwrite=True
     )
 
-    print(r)
-
     src_url = r["url"]
 
-    print(r["public_id"])
-    print(r["url"])
-    input()
-    # photo_url = r["secure_url"]
-    # public_id = r["public_id"]
-
     tags = []
+
     for tag_name in tags:
         existing_tag = await get_or_create_tag(tag_name, db)
         tags.append(existing_tag)
