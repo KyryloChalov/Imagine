@@ -5,10 +5,10 @@ from sqlalchemy import select, update, func, extract, and_
 
 from src.database.db import get_db
 from src.schemas.comments import CommentSchema, CommentResposeSchema, CommentUpdateSchema
+from src.conf import messages
 # from sqlalchemy.sql.sqltypes import Date
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# from src.models.models import Contact, User
 from src.models.models import Comment
 
 
@@ -63,11 +63,10 @@ async def edit_comment(comment_id: int,
         comment.opinion = body.opinion
 
     try:
-
         await db.commit()
         await db.refresh(comment)
     except:
-        raise HTTPException(status_code=500, detail="Error updating comment")
+        raise HTTPException(status_code=500, detail=messages.ERROR_UPDATING_COMMENT)
 
     return comment
 
@@ -82,3 +81,11 @@ async def delete_comment(comment_id: int,
         await db.delete(comment)
         await db.commit()
     return comment
+
+
+async def get_photo_id(photo_id: int,
+                       db: AsyncSession = Depends(get_db),
+                       ):
+    stmt = select(Comment).filter_by(photo_id=photo_id)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
