@@ -4,6 +4,7 @@ from src.seed.tags import seed_tags
 from src.seed.photos import seed_photos
 from src.seed.comments import seed_comments
 from src.seed.ratings import seed_ratings
+from src.seed.photo2tag import seed_photo_2_tag
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.db import get_db
 
@@ -48,3 +49,9 @@ async def seed_fake_comments(
 async def seed_fake_ratings(db: AsyncSession = Depends(get_db)):
     await seed_ratings(db)
     return {"message": f"You have new fake Ratings"}
+
+
+# @router.post("/fake_photo_2_tag")
+# async def seed_fake_photo_2_tag(db: AsyncSession = Depends(get_db)):
+#     await seed_photo_2_tag(db)
+#     return {"message": f"You have new fake Photos_2_Tags data"}
