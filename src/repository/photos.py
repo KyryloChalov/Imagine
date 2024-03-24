@@ -22,7 +22,6 @@ async def get_or_create_tag(tag_name: str, db: AsyncSession) -> Tag:
     existing_tag = await db.execute(select(Tag).filter(Tag.name == tag_name))
     tag = existing_tag.scalar_one_or_none()
 
-    # If the tag does not exist, create a new one
     if not tag:
         tag = Tag(name=tag_name)
         db.add(tag)
@@ -65,7 +64,7 @@ async def create_photo(
 
     tags = []
 
-    for tag_name in tags:
+    for tag_name in list_tags:
         existing_tag = await get_or_create_tag(tag_name, db)
         tags.append(existing_tag)
 
@@ -76,6 +75,7 @@ async def create_photo(
         user_id=user.id,
         tags=tags,
     )
+
     try:
         db.add(new_photo)
         await db.commit()
