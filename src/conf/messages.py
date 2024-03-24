@@ -20,3 +20,4 @@ RATING_VALUE_INCORRECT = (
 )
 SOMETHING_WRONG = "Something went wrong!"
 PHOTO_SUCCESSFULLY_ADDED = "Photo successfully added!"
+NO_PHOTO_BY_ID = "Not found photo by this ID"

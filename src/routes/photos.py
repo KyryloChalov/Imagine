@@ -16,6 +16,7 @@ from src.services.auth import auth_service
 from src.conf.config import config
 from src.repository import users as repositories_users
 from src.repository import photos as repositories_photos
+from src.conf.messages import NO_PHOTO_BY_ID
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
@@ -96,18 +97,31 @@ async def del_photo(user: User = Depends(auth_service.get_current_user)):
     return user
 
 
-@router.put(
+@router.patch(
     "/{photo_id}",
-    response_model=UserResponse,
-    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+    dependencies=[Depends(RateLimiter(times=10, seconds=20))],
 )
-async def edit_photo_record(user: User = Depends(auth_service.get_current_user)):
+async def edit_photo_record(
+    photo_id: int,
+    new_description: str,
+    tags: list[str] = Form(),
+    user: User = Depends(auth_service.get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     ...
     """
     Редагувати опис/додати теги
     201 або помилку
     """
-    return user
+    tags = tags[0].split(",")
+    updated_photo = await repositories_photos.edit_photo_description(
+        user, photo_id, new_description, tags, db
+    )
+
+    if updated_photo:
+        return updated_photo
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=NO_PHOTO_BY_ID)
 
 
 @router.post(

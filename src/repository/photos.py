@@ -8,7 +8,7 @@ from src.conf.config import config
 from src.models.models import User, Tag
 from sqlalchemy import select, update, func, extract, and_
 from datetime import date, timedelta
-from fastapi import File
+from fastapi import File, HTTPException
 
 # from sqlalchemy.sql.sqltypes import Date
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,6 +29,24 @@ async def get_or_create_tag(tag_name: str, db: AsyncSession) -> Tag:
         await db.refresh(tag)
 
     return tag
+
+
+def check_tags_quantity(tags: list[str]) -> bool | None:
+    if len(tags) > 5:
+        raise HTTPException(
+            status_code=400, detail="You can add no more 5 tags to one photo."
+        )
+    return True
+
+
+async def assembling_tags(source_tags: list[str], db: AsyncSession) -> List[Tag]:
+    tags = []
+
+    for tag_name in source_tags:
+        existing_tag = await get_or_create_tag(tag_name, db)
+        tags.append(existing_tag)
+
+    return tags
 
 
 async def create_photo(
@@ -62,11 +80,8 @@ async def create_photo(
 
     src_url = r["url"]
 
-    tags = []
-
-    for tag_name in list_tags:
-        existing_tag = await get_or_create_tag(tag_name, db)
-        tags.append(existing_tag)
+    check_tags_quantity(list_tags)
+    tags = await assembling_tags(list_tags, db)
 
     new_photo = Photo(
         path=src_url,
@@ -84,3 +99,32 @@ async def create_photo(
         await db.rollback()
         raise e
     return {"success message": PHOTO_SUCCESSFULLY_ADDED}
+
+
+async def edit_photo_description(
+    user: User, photo_id: int, description: str, list_tags: List[str], db: AsyncSession
+) -> dict:
+
+    query_result = await db.execute(
+        select(Photo).where(Photo.user_id == user.id).where(Photo.id == photo_id)
+    )
+    photo = query_result.scalar()
+
+    check_tags_quantity(list_tags)
+    # tags = await assembling_tags(list_tags, db)
+    tags = []
+
+    for tag_name in list_tags:
+        existing_tag = await get_or_create_tag(tag_name, db)
+        tags.append(existing_tag)
+
+    if photo:
+        photo.description = description
+        # photo.tags = tags
+        try:
+            await db.commit()
+            await db.refresh(photo)
+            return photo
+        except Exception as e:
+            await db.rollback()
+            raise e
