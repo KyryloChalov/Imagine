@@ -32,7 +32,7 @@ async def seed_basic_users(db: AsyncSession = Depends(get_db)):
         ):
             offset += 1
 
-        name_ = f'{role + (str('_' + str(offset)) if offset > 0 else "")}'
+        name_ = f"{role + (str('_' + str(offset)) if offset > 0 else '')}"
 
         body = UserSchema(
             name=name_,
