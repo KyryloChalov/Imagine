@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 /postgres-data
 .DS_Store
+.idea
+contacts.py
