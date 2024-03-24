@@ -1,4 +1,3 @@
-import pickle
 import uuid
 from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
 from typing import List
@@ -11,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
 from src.models.models import User, Role, Comment
-from src.schemas.user import UserResponse
 from src.schemas.comments import CommentSchema, CommentResposeSchema, CommentUpdateSchema
 
 from src.services.auth import auth_service
@@ -166,8 +164,6 @@ async def delete_comment(comment_id: int = Path(ge=1),
     comment = await repositories_comments.get_comment(comment_id, db)
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.COMMENT_NOT_FOUND)
-    if comment.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=messages.YOU_CAN_NOT_DELETE_COMMENT)
 
     comment = await repositories_comments.delete_comment(comment_id, db)
     return comment
