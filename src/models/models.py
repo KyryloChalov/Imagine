@@ -14,11 +14,11 @@ from sqlalchemy import (
     ForeignKey,
     Boolean,
 )
-from sqlalchemy.orm import column_property
+# from sqlalchemy.orm import column_property
 from sqlalchemy.sql.sqltypes import Date, DateTime
 from sqlalchemy_utils import EmailType
 from fastapi_users_db_sqlalchemy import generics
-from sqlalchemy.ext.hybrid import hybrid_property
+# from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase
 
 from src.conf.constants import (
@@ -58,27 +58,18 @@ photo_m2m_tag = Table(
 
 class Datefield:
     created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
-    updated_at: Mapped[date] = mapped_column(
-        "updated_at", DateTime, default=func.now(), onupdate=func.now()
-    )
+    updated_at: Mapped[date] = mapped_column("updated_at", DateTime, default=func.now(), onupdate=func.now())
 
 
 class Photo(Base, Datefield):
     __tablename__ = "photos"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     path: Mapped[str] = mapped_column(String(PHOTO_PATH_LENGTH), nullable=False)
-    description: Mapped[str] = mapped_column(
-        String(PHOTO_MAX_DESCRIPTION_LENGTH), nullable=False
-    )
-    path_transform: Mapped[str] = mapped_column(
-        String(TRANSFORM_PATH_LENGTH), nullable=True
-    )
-    # created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
-    # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
-
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-    user: Mapped["User"] = relationship("User", backref="photos", lazy="joined")
-    rating: Mapped["Rating"] = relationship("Rating", backref="photos", lazy="joined")
+    description: Mapped[str] = mapped_column(String(PHOTO_MAX_DESCRIPTION_LENGTH), nullable=False)
+    path_transform: Mapped[str] = mapped_column(String(TRANSFORM_PATH_LENGTH), nullable=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    comment: Mapped["Comment"] = relationship("Comment", backref="photos", lazy="joined", cascade="all, delete-orphan")
+    rating: Mapped["Rating"] = relationship("Rating", backref="photos", lazy="joined", cascade="all, delete-orphan")
     tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
 
 
@@ -86,14 +77,9 @@ class Comment(Base, Datefield):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     opinion: Mapped[str] = mapped_column(String(COMMENT_MAX_LENGTH), nullable=False)
-    # rating: Mapped[int] = mapped_column(Integer, nullable=False)
-    # created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
-    # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    photo_id: Mapped[int] = mapped_column(ForeignKey("photos.id", ondelete="CASCADE"), nullable=False)
 
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-    user: Mapped["User"] = relationship("User", backref="comments", lazy="joined")
-    photo_id: Mapped[int] = mapped_column(ForeignKey("photos.id"), nullable=False)
-    photo: Mapped["Photo"] = relationship("Photo", backref="comments", lazy="joined")
 
 
 class Role(enum.Enum):
@@ -104,35 +90,25 @@ class Role(enum.Enum):
 
 class User(Base, Datefield):
     __tablename__ = "users"
-    id: Mapped[uuid.UUID] = mapped_column(
-        generics.GUID(), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(generics.GUID(), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH), nullable=True)
-    username: Mapped[str] = mapped_column(
-        String(USERNAME_MAX_LENGTH), nullable=False, unique=True
-    )
-    email: Mapped[str] = mapped_column(
-        String(EMAIL_MAX_LENGTH), nullable=False, unique=True
-    )
+    username: Mapped[str] = mapped_column(String(USERNAME_MAX_LENGTH), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(String(EMAIL_MAX_LENGTH), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(PASSWORD_MAX_LENGTH), nullable=False)
-    # created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
-    # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
     refresh_token: Mapped[str] = mapped_column(String(TOKEN_MAX_LENGTH), nullable=True)
-    role: Mapped[Enum] = mapped_column(
-        "role", Enum(Role), default=Role.user, nullable=False
-    )
+    role: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.user, nullable=False)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned_at: Mapped[date] = mapped_column(Date, nullable=True)
     avatar: Mapped[str] = mapped_column(String(AVATAR_PATH_LENGTH), nullable=True)
-
+    photo: Mapped["Photo"] = relationship("Photo", backref="users", cascade="all, delete-orphan")
+    comment: Mapped["Comment"] = relationship("Comment", backref="users", cascade="all, delete-orphan")
+    rating: Mapped["Rating"] = relationship("Rating", backref="users", cascade="all, delete-orphan")
 
 class Rating(Base, Datefield):
     __tablename__ = "ratings"
     id: Mapped[int] = mapped_column(primary_key=True)
     rating: Mapped[int] = mapped_column(nullable=False)
-    photo_id: Mapped[int] = mapped_column(ForeignKey("photos.id"), nullable=False)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-    user: Mapped["User"] = relationship("User", backref="ratings")
-    # created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
-    # updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+    photo_id: Mapped[int] = mapped_column(ForeignKey("photos.id", ondelete="CASCADE"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    

@@ -32,7 +32,7 @@ async def seed_basic_users(db: AsyncSession = Depends(get_db)):
         ):
             offset += 1
 
-        name_ = f"{role + (str("_" + str(offset)) if offset > 0 else "")}"
+        name_ = f"{role + (str('_' + str(offset)) if offset > 0 else '')}"
 
         body = UserSchema(
             name=name_,
@@ -51,7 +51,7 @@ async def seed_basic_users(db: AsyncSession = Depends(get_db)):
             user.banned = True
         if role != roles[3]:
             user.confirmed = True
-        if role in [roles[0], roles[1]]:
+        if role in [roles[0], roles[1], roles[2]]:
             user.role = role
 
         await db.commit()
