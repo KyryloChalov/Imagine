@@ -1,3 +1,8 @@
+"""
+Comments API Routes
+Provides API routes for creating, retrieving, updating, and deleting comments.
+"""
+
 import uuid
 from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
 from typing import List
@@ -22,17 +27,16 @@ router = APIRouter(prefix="/comments", tags=["comments"])
 
 # Access to the operations by roles
 access_get = RoleAccess([Role.admin, Role.moderator, Role.user])
-access_update = RoleAccess([Role.admin, Role.moderator, Role.user])
+access_update = RoleAccess([Role.user])
+access_create = RoleAccess([Role.user])
 access_delete = RoleAccess([Role.admin, Role.moderator])
-access_admin = RoleAccess([Role.admin])
-access_comment = RoleAccess([Role.user])
 
 
 @router.post(
     "/{photo_id}",
     response_model=CommentResposeSchema,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(access_get)],
+    dependencies=[Depends(access_create)],
 )
 async def create_comment(photo_id: int,
                          comment: CommentSchema,
@@ -50,8 +54,7 @@ async def create_comment(photo_id: int,
 
     new_comment = Comment(**comment.dict(), photo_id=photo_id, user_id=user.id)
     # print(f'{new_comment.photo_id=}')
-    # TODO: check if photo with provided photo_id exists
-    photo_exists = await repositories_comments.get_photo_id(photo_id, db)
+    photo_exists = await repositories_comments.get_photo_by_id(photo_id, db)
     if not photo_exists:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.PHOTO_NOT_FOUND)
     db.add(new_comment)
@@ -71,12 +74,13 @@ async def get_all_comments(limit: int = Query(10, ge=10, le=100),
                            db: AsyncSession = Depends(get_db), ):
     """
     Function returns a list of comments for the photo with photo_id
+
     :param photo_id: int: Get the photo_id from the url
     :param db: Session: Get the database session
     :return: A list of comments for the photo with photo_id. If the photo with photo_id is not found, an HTTPException is raised.
     """
 
-    comments = await repositories_comments.get_comment_photo_id(photo_id, db)
+    comments = await repositories_comments.get_all_comment_for_photo(photo_id, db)
     if not comments:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.COMMENT_NOT_FOUND)
     return comments
@@ -95,7 +99,7 @@ async def get_user_comments(
 ):
     """
     Function returns a list of users comments with user_id for the photo with photo_id
-    If user not specified , function returns a list of comments for the current user for the photo with photo_id.
+    If user not specified, function returns a list of comments for the current user for the photo with photo_id.
 
     :param db: Session: Get the database session
     :param user_id: int: Get the comments of a specific user
@@ -107,7 +111,7 @@ async def get_user_comments(
     if user_id is None:
         user_id = user.id
 
-    comments = await repositories_comments.get_comment_photo_user_id(photo_id, user_id, db)
+    comments = await repositories_comments.get_user_comments_for_photo(photo_id, user_id, db)
 
     if comments is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.COMMENT_NOT_FOUND)
@@ -137,10 +141,7 @@ async def update_comment(comment_id: int = Path(ge=1),
     comment = await repositories_comments.get_comment(comment_id, db)
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.COMMENT_NOT_FOUND)
-    if comment.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=messages.YOU_CAN_NOT_EDIT_COMMENT)
 
-    # stmt = select(Comment).filter(Comment.id == comment_id, user=user)
     updated_comment = await repositories_comments.edit_comment(comment_id, body, db)
     updated_comment.updated_at = datetime.now()
     return updated_comment
