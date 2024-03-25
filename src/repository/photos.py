@@ -110,17 +110,20 @@ async def edit_photo_description(
     )
     photo = query_result.scalar()
 
+    # Перевіряємо отриманий список тегів на кількість (<=5)
     check_tags_quantity(list_tags)
-    # tags = await assembling_tags(list_tags, db)
-    tags = []
+    await assembling_tags(list_tags, db)  # Додаємо відсутні теги у базу
+    tags_from_base = await db.execute(select(Tag).filter(Tag.name.in_(list_tags)))
 
-    for tag_name in list_tags:
-        existing_tag = await get_or_create_tag(tag_name, db)
-        tags.append(existing_tag)
+    tags = []
+    for tag in tags_from_base:
+        tags.append(tag)
 
     if photo:
         photo.description = description
-        # photo.tags = tags
+
+        # photo.tags = tags  # Тут чомусь виникає помилка
+
         try:
             await db.commit()
             await db.refresh(photo)
@@ -128,3 +131,56 @@ async def edit_photo_description(
         except Exception as e:
             await db.rollback()
             raise e
+
+
+async def get_all_photos(
+    skip_photos: int, photos_per_page: int, db: AsyncSession
+) -> list[Photo]:
+
+    result = await db.execute(
+        select(Photo).order_by(Photo.id).offset(skip_photos).limit(photos_per_page)
+    )
+
+    photos = result.scalars().all()
+
+    return photos
+
+
+async def get_photo_by_id(photo_id: int, db: AsyncSession) -> dict | None:
+
+    result = await db.execute(select(Photo).filter(Photo.id == photo_id))
+    photo = result.scalar_one_or_none()
+    print(photo)
+    input()
+    return photo
+
+
+# async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
+
+#     result = await db.execute(select(Photo).filter(Photo.id == photo_id))
+#     photo = result.scalar_one_or_none()
+
+#     if not photo:
+#         return False
+
+#     # if user.role == Role.admin or photo.user_id == user.id:
+#     if photo.user_id == user.id:
+#         cloudinary.config(
+#         cloud_name=config.CLOUDINARY_NAME,
+#         api_key=config.CLOUDINARY_API_KEY,
+#         api_secret=config.CLOUDINARY_API_SECRET,
+#         secure=True,
+#     )
+#         cloudinary.uploader.destroy(photo.cloud_public_id)
+#         try:
+#             # Видалення пов'язаних рейтингів
+#             await db.execute(
+#                 Rating.__table__.delete().where(Rating.photo_id == photo_id)
+#             )
+#             # Deleting linked photo
+#             await db.delete(photo)
+#             await db.commit()
+#             return True
+#         except Exception as e:
+#             await db.rollback()
+#             raise e
