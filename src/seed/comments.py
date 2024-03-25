@@ -21,24 +21,28 @@ async def seed_comments(count: int = 100, db: AsyncSession = Depends(get_db)):
     users_id = []
     for user in users:
         users_id.append(user.id)
+    users_id = list(set(users_id))
     # print(f"{users_id = }")
+    # print(f"{len(users_id) = }")
 
     result = await db.execute(select(Photo))
     photos = result.scalars().all()
     photos_id = []
     for photo in photos:
         photos_id.append(photo.id)
+    photos_id = list(set(photos_id))
     # print(f"{photos_id = }")
+    # print(f"{len(photos_id) = }")
 
-    for _ in range(count):
-        new_comment = Comment(
-            opinion=fake_data.text(
-                random.randint(COMMENT_MIN_LENGTH, COMMENT_MAX_LENGTH)
-            )[:-1],
-            user_id=users_id[random.randint(0, len(users_id) - 1)],
-            photo_id=photos_id[random.randint(0, len(photos_id) - 1)],
-        )
+    # for _ in range(count):
+    #     new_comment = Comment(
+    #         opinion=fake_data.text(
+    #             random.randint(COMMENT_MIN_LENGTH, COMMENT_MAX_LENGTH)
+    #         )[:-1],
+    #         user_id=users_id[random.randint(0, len(users_id) - 1)],
+    #         photo_id=photos_id[random.randint(0, len(photos_id) - 1)],
+    #     )
 
-        db.add(new_comment)
-        await db.commit()
-        await db.refresh(new_comment)
+    #     db.add(new_comment)
+    #     await db.commit()
+    #     await db.refresh(new_comment)

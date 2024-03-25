@@ -21,16 +21,21 @@ async def seed_ratings(db: AsyncSession = Depends(get_db)):
     users_id = []
     for user in users:
         users_id.append(user.id)
+    users_id = list(set(users_id))
     # print(f"{users_id = }")
+    # print(f"{len(users_id) = }")
 
     result = await db.execute(select(Photo))
     photos = result.scalars().all()
     photos_id = []
     for photo in photos:
         photos_id.append(photo.id)
+    photos_id = list(set(photos_id))
     # print(f"{photos_id = }")
+    # print(f"{len(photos_id) = }")
 
     count = len(users_id) * len(photos_id) // 2
+    print(f"+++++++++++ {count = }")
     for _ in range(count):
         new_rating = Rating(
             rating=random.randint(1, 5),
@@ -38,6 +43,6 @@ async def seed_ratings(db: AsyncSession = Depends(get_db)):
             photo_id=photos_id[random.randint(0, len(photos_id) - 1)],
         )
 
-        db.add(new_rating)
-        await db.commit()
-        await db.refresh(new_rating)
+        # db.add(new_rating)
+        # await db.commit()
+        # await db.refresh(new_rating)

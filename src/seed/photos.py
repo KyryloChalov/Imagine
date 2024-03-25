@@ -28,6 +28,7 @@ async def seed_photos(count: int = 10, db: AsyncSession = Depends(get_db)):
     users_id = []
     for user in users:
         users_id.append(user.id)
+    users_id = list(set(users_id))
 
     for _ in range(count):
 

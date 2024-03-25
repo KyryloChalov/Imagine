@@ -51,7 +51,7 @@ async def seed_fake_ratings(db: AsyncSession = Depends(get_db)):
     return {"message": f"You have new fake Ratings"}
 
 
-# @router.post("/fake_photo_2_tag")
-# async def seed_fake_photo_2_tag(db: AsyncSession = Depends(get_db)):
-#     await seed_photo_2_tag(db)
-#     return {"message": f"You have new fake Photos_2_Tags data"}
+@router.post("/fake_photo_2_tag")
+async def seed_fake_photo_2_tag(db: AsyncSession = Depends(get_db)):
+    await seed_photo_2_tag(db)
+    return {"message": f"You have new fake Photos_2_Tags data"}
