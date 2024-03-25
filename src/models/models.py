@@ -71,6 +71,7 @@ class Photo(Base, Datefield):
     comment: Mapped["Comment"] = relationship("Comment", backref="photos", lazy="joined", cascade="all, delete-orphan")
     rating: Mapped["Rating"] = relationship("Rating", backref="photos", lazy="joined", cascade="all, delete-orphan")
     tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
+    public_photo_id: Mapped[str] = mapped_column(String(PHOTO_PATH_LENGTH), nullable=False)
 
 
 class Comment(Base, Datefield):
@@ -79,7 +80,6 @@ class Comment(Base, Datefield):
     opinion: Mapped[str] = mapped_column(String(COMMENT_MAX_LENGTH), nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     photo_id: Mapped[int] = mapped_column(ForeignKey("photos.id", ondelete="CASCADE"), nullable=False)
-
 
 
 class Role(enum.Enum):
@@ -105,10 +105,10 @@ class User(Base, Datefield):
     comment: Mapped["Comment"] = relationship("Comment", backref="users", cascade="all, delete-orphan")
     rating: Mapped["Rating"] = relationship("Rating", backref="users", cascade="all, delete-orphan")
 
+
 class Rating(Base, Datefield):
     __tablename__ = "ratings"
     id: Mapped[int] = mapped_column(primary_key=True)
     rating: Mapped[int] = mapped_column(nullable=False)
     photo_id: Mapped[int] = mapped_column(ForeignKey("photos.id", ondelete="CASCADE"), nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    
