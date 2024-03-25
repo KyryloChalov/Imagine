@@ -51,6 +51,9 @@ async def create_comment(photo_id: int,
     new_comment = Comment(**comment.dict(), photo_id=photo_id, user_id=user.id)
     # print(f'{new_comment.photo_id=}')
     # TODO: check if photo with provided photo_id exists
+    photo_exists = await repositories_comments.get_photo_id(photo_id, db)
+    if not photo_exists:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.PHOTO_NOT_FOUND)
     db.add(new_comment)
     await db.commit()
     await db.refresh(new_comment)
