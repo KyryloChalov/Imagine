@@ -7,6 +7,7 @@ from typing import Optional, List
 from src.conf.constants import RATING_MIN_VALUE, RATING_MAX_VALUE
 from src.conf.messages import RATING_VALUE_INCORRECT
 
+
 class RatingSchema(BaseModel):
     rating: int = Field(ge=1, le=5)
 
@@ -15,6 +16,20 @@ class RatingSchema(BaseModel):
         if (rating_num < RATING_MIN_VALUE) or (rating_num > RATING_MAX_VALUE):
             raise ValueError(RATING_VALUE_INCORRECT)
         return rating_num
+
+
+class RatingBaseResponseSchema(BaseModel):
+    id: int
+    user_id: uuid.UUID
+    photo_id: int
+
+
+class RatingResponseSchema(RatingBaseResponseSchema):
+    rating: int = Field(ge=1, le=5)
+
+
+class RatingAVGResponseSchema(RatingBaseResponseSchema):
+    rating: float = Field(ge=1, le=5)
 
 
 class PhotosSchema(BaseModel):

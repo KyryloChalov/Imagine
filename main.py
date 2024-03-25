@@ -17,7 +17,7 @@ import uvicorn
 from src.routes import photos
 from src.database.db import get_db
 from src.conf.config import config
-from src.routes import auth, users, comments, seed
+from src.routes import auth, users, comments, seed, ratings
 
 
 @asynccontextmanager
@@ -46,7 +46,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 BASE_DIR = Path(__file__).parent
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
@@ -63,6 +62,7 @@ app.include_router(auth.auth_router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(photos.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
+app.include_router(ratings.router, prefix="/api")
 app.include_router(seed.router, prefix="")
 
 
