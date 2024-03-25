@@ -57,8 +57,9 @@ async def signup(
     :return: A user object
     :doc-author: Trelent
     """
-    exist_user = await repositories_users.get_user_by_email(body.email, db)
-    if exist_user:
+    exist_user_email = await repositories_users.get_user_by_email(body.email, db)
+    exist_user_username = await repositories_users.get_user_by_username(body.username, db)
+    if exist_user_email or exist_user_username:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=messages.ACCOUNT_EXIST
         )
@@ -95,6 +96,10 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=messages.EMAIL_NOT_CONFIRMED,
+        )
+    if user.banned:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=messages.USER_FORBIDDEN
         )
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(

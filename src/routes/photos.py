@@ -1,6 +1,6 @@
 import pickle
 import time
-from typing import Annotated
+from typing import Annotated, List
 
 
 from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form
@@ -10,13 +10,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.models.models import User
+from src.models.models import User, Photo
 from src.schemas.user import UserResponse
 from src.services.auth import auth_service
 from src.conf.config import config
 from src.repository import users as repositories_users
 from src.repository import photos as repositories_photos
-from src.conf.messages import NO_PHOTO_BY_ID
+from src.conf.messages import NO_PHOTO_BY_ID, PHOTO_SUCCESSFULLY_DELETED
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
@@ -24,16 +24,25 @@ router = APIRouter(prefix="/photos", tags=["photos"])
 
 @router.get(
     "/",
-    response_model=UserResponse,
-    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(RateLimiter(times=5, seconds=20))],
 )
-async def get_all_photos(user: User = Depends(auth_service.get_current_user)):
+async def get_all_photos(
+    skip_photos: int = 0,
+    photos_per_page: int = 10,
+    db: AsyncSession = Depends(get_db),
+):
     ...
     """
     Отримати всі світлини
     Пагінований список
     """
-    return user
+    all_photos = await repositories_photos.get_all_photos(
+        skip_photos, photos_per_page, db
+    )
+    print(all_photos)
+    input()
+    return all_photos
 
 
 @router.post(
@@ -71,30 +80,50 @@ async def put_photo(
 
 @router.get(
     "/{photo_id}",
-    response_model=UserResponse,
+    name="get_photo",
+    status_code=status.HTTP_200_OK,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
-async def get_photo(user: User = Depends(auth_service.get_current_user)):
+async def get_photo(
+    photo_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(auth_service.get_current_user),
+):
     ...
     """
     Отримати світлину за id
-    Світлина з даними (опис, коментарі, лінл та QR-код)
+    Світлина з даними (опис, коментарі, лінк та QR-код)
     """
-    return user
+    photo = await repositories_photos.get_photo_by_id(photo_id, db)
+
+    if photo:
+        return photo
+
+    raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=NO_PHOTO_BY_ID)
 
 
 @router.delete(
     "/{photo_id}",
-    response_model=UserResponse,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
-async def del_photo(user: User = Depends(auth_service.get_current_user)):
+async def del_photo(
+    photo_id: int,
+    user: User = Depends(auth_service.get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     ...
     """
     Видалити світлину
     201 або помилку
     """
-    return user
+    ...
+    # result = await repositories_photos.delete_photo(photo_id, user, db)
+    # if not result:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_404_NOT_FOUND, detail=NO_PHOTO_BY_ID
+    #     )
+
+    return {"message": PHOTO_SUCCESSFULLY_DELETED}
 
 
 @router.patch(

@@ -1,16 +1,17 @@
 import pickle
+import uuid
 
 import cloudinary
 import cloudinary.uploader
-from fastapi import APIRouter, HTTPException, Depends, Query, status, UploadFile, File
-
+from fastapi import APIRouter, HTTPException, Depends, Query, status, UploadFile, File, Path
 from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
 from src.models.models import User, Role
-from src.schemas.user import UserResponse, AboutUser
+from src.schemas.user import UserChangeRoleResponse, UserChangeRole, UserResponse, AboutUser, UserUpdateSchema
 from src.services.auth import auth_service
+from src.conf import messages
 from src.conf.config import config
 from src.services.roles import RoleAccess
 from src.repository import users as repositories_users
@@ -57,52 +58,86 @@ async def get_all_users(
     return users
 
 
-@router.patch(
-    "/{id}",
-    response_model=UserResponse,
-    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-)
-async def update_user(
-    db: AsyncSession = Depends(get_db),
-    user: User = Depends(auth_service.get_current_user),
-):
-    ...
+@router.patch("/{id}", response_model=UserResponse,
+    dependencies=[Depends(RateLimiter(times=1, seconds=20))])
+async def update_user(body: UserUpdateSchema, id: uuid.UUID = Path(), db: AsyncSession = Depends(get_db),
+                    user: User = Depends(auth_service.get_current_user)):
     """
-    Банимо користувача
-    banned=TRUE|FALSE
-    201 або помилку
-    admin
+    The update_user function updates a user in the database. Can do it only current User or Admin
+        Args:
+            body (UserUpdateSchema): The updated user information.
+            id (uuid.UUID): The unique identifier of the user to update.
+            db (AsyncSession): An async session for interacting with the database.
+                Defaults to Depends(get_db).
+        Returns:
+            User: A User object representing an updated version of the original 
+    
+    :param body: UserUpdateSchema: Validate the data that is passed to the function
+    :param id: uuid.UUID: Get the user id from the url
+    :param db: AsyncSession: Pass the database connection to the repository
+    :param user: User: Get the current user
+    :return: An updated user object
+    
     """
+    email = user.email
+    if user.id != id and user.role != Role.admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=messages.USER_NOT_HAVE_PERMISSIONS)
+    try:
+        user = await repositories_users.update_user(id, body, db, user)
+        print(user.email)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.USER_NOT_FOUND)
+        # якщо змінився email то забираємо з кэшу і записуємо новий юзер
+        if email != user.email:
+            _ = auth_service.cache.unlink(email)
+        auth_service.cache.set(user.email, pickle.dumps(user))
+        auth_service.cache.expire(user.email, 300)
+    except:
+        raise HTTPException(status_code=409, detail=messages.USER_OR_EMAIL_NOT_UNIQUE)
     return user
 
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(id: uuid.UUID = Path(), 
+                    db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)):   
+    """
+    The delete_user function deletes a user from the database.
+        The function takes in an id as a path parameter and returns a message indicating that the user has been deleted.
+        If no user is found with the given id, then it will return an HTTP 404 error code with detail message of &quot;User not found&quot;. 
+    
+    
+    :param id: uuid.UUID: Get the user id from the url
+    :param db: AsyncSession: Get the database session
+    :param user: User: Get the current user from the token
+    :return: A dict with a message
+    :doc-author: Trelent
+    """
+    user = await repositories_users.delete_user(id, db, user)
+    print(user.email)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.USER_NOT_FOUND)
+    if user.username == messages.USER_NOT_HAVE_PERMISSIONS:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=messages.USER_NOT_HAVE_PERMISSIONS)
+    user_hash = str(user.email)
+    _ = auth_service.cache.unlink(user_hash)
+    return {"message": messages.USER_DELETED}
 
-# @router.post(
-#     "/me",
-#     response_model=UserResponse,
-#     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-# )
-# async def edit_me(user: User = Depends(auth_service.get_current_user)):
-#     ...
-#     """
-#     Редагувати свій профіль
-#     201 або помилку
-#     """
-#     return user
 
-
-# @router.patch(
-#     "/change_role/{user_id}",
-#     response_model=UserResponse,
-#     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-# )
-# async def change_user_role(user: User = Depends(auth_service.get_current_user)):
-#     ...
-#     """
-#     Зміна ролі користувача
-#     201 або помилку
-#     admin, moderator
-#     """
-#     return user
+@router.patch("/change_role/{user_id}", response_model=UserChangeRoleResponse,
+    dependencies=[Depends(RateLimiter(times=1, seconds=20)), Depends(access_to_route_all)])
+async def change_user_role(body: UserChangeRole, user_id: uuid.UUID = Path(), db: AsyncSession = Depends(get_db), 
+                           user: User = Depends(auth_service.get_current_user)):
+    # changed_role = RoleAccess([Role.user, Role.moderator])
+    print(body.role)
+    print(Role.moderator)
+    if body.role == Role.user or body.role == Role.moderator:
+        user = await repositories_users.change_user_role(user_id, body, db, user)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.USER_NOT_FOUND)
+        auth_service.cache.set(user.email, pickle.dumps(user))
+        auth_service.cache.expire(user.email, 300)
+    else:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=messages.WRONG_ROLE)
+    return user
 
 
 @router.get(
@@ -133,7 +168,7 @@ async def get_username_info(
 
     user, num_photos = await repositories_users.get_info_by_username(username, db)
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOT FOUND")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.USER_NOT_FOUND)
     user.num_photos = num_photos
     return user
 

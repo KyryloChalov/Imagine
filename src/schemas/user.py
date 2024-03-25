@@ -23,7 +23,18 @@ class UserSchema(BaseModel):
     password: str = Field(
         min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
     )
-
+    
+class UserUpdateSchema(BaseModel):
+    name: str = Field(min_length=NAME_MIN_LENGTH, max_length=NAME_MAX_LENGTH)
+    username: str = Field(min_length=USERNAME_MIN_LENGTH, max_length=USERNAME_MAX_LENGTH)
+    email: EmailStr
+    updated_at: datetime = Field(default=datetime.now())
+    
+class UserChangeRole(BaseModel):
+    role: Role
+    banned: bool
+    updated_at: datetime = Field(default=datetime.now())
+   
 
 class UserResponse(BaseModel):
     id: uuid.UUID
@@ -35,7 +46,11 @@ class UserResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)  # noqa
-
+    
+class UserChangeRoleResponse(UserResponse):
+    role: Role
+    banned: bool
+    updated_at: datetime
 
 class AboutUser(UserResponse):
     num_photos: int
