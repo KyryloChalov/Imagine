@@ -51,7 +51,7 @@ async def seed_basic_users(db: AsyncSession = Depends(get_db)):
             user.banned = True
         if role != roles[3]:
             user.confirmed = True
-        if role in [roles[0], roles[1]]:
+        if role in [roles[0], roles[1], roles[2]]:
             user.role = role
 
         await db.commit()
