@@ -26,71 +26,71 @@ class Photo2Tag(Base):
 async def seed_photo_2_tag(db: AsyncSession = Depends(get_db)):
     """
     генерація таблиці many_2_many
+    працює виключно з пустою таблицею
+    запобігає появленню більше ніж TAGS_MAX_NUMBER тегів у фото
+    перед автозаповненням мають бути заповнені таблиці photo та tag
+    кількість значень, що генерується приблизно дорівнює (<=)
+    третині добутку (photo * tag)
     """
     print("photo2tags")
-    result = await db.execute(select(Photo))
-    photos = result.scalars().all()
+    result = await db.execute(select(Photo2Tag))
+    photo2tags = result.scalars().all()
+    if len(photo2tags) > 0:
+        ...
+        print(
+            "Таблиця 'photo2tags' вміє заповнюватися тільки коли вона порожня"
+        )
+        print("Перед повторним автозаповненням слід очистити таблицю 'photo2tags'")
 
-    photos_id = []
-    for photo in photos:
-        photos_id.append(photo.id)
-    photos_id = list(set(photos_id))
-    # print(f"*********** {photos_id = }")
-    # print(f"{len(photos_id) = }")
+    else:
+        result = await db.execute(select(Photo))
+        photos = result.scalars().all()
+        photos_id = []
+        for photo in photos:
+            photos_id.append(photo.id)
+        photos_id = list(set(photos_id))
 
-    result = await db.execute(select(Tag))
-    tags = result.scalars().all()
-    tags_id = []
-    for tag in tags:
-        tags_id.append(tag.id)
-    tags_id = list(set(tags_id))
-    # print(f"{tags_id = }")
-    # print(f"{len(tags_id) = }")
+        result = await db.execute(select(Tag))
+        tags = result.scalars().all()
+        tags_id = []
+        for tag in tags:
+            tags_id.append(tag.id)
+        tags_id = list(set(tags_id))
 
-    pairs: list = []
-    count = len(photos_id) * len(tags_id) // 2
-    # print(f"+++++++++++ {count = }")
-    for n in range(count):
-        pair = {}
-        photo_id = photos_id[random.randint(0, len(photos_id) - 1)]
-        tag_id = tags_id[random.randint(0, len(tags_id) - 1)]
-        pair = {"photo_id": photo_id, "tag_id": tag_id}
-        # print(f"{n+1}.. {pair = }")
-        skip = False
-        count_tags = 1
+        pairs: list = []
+        count = len(photos_id) * len(tags_id) // 3
+        for _ in range(count):
+            skip, count_tags, pair = False, 1, {}
 
-        for i in range(0, len(pairs)):
-            if int(photo_id) == int(pairs[i]["photo_id"]) and int(tag_id) == int(
-                pairs[i]["tag_id"]
-            ):
-                # print(">>>", photo_id, ":", tag_id, "==", pairs[i])
-                # print({">>> identical <<<"})
-                skip = True
-                # print("break ident")
-                break
+            photo_id = int(photos_id[random.randint(0, len(photos_id) - 1)])
+            tag_id = int(tags_id[random.randint(0, len(tags_id) - 1)])
+            pair = {"photo_id": photo_id, "tag_id": tag_id}
 
-            if int(photo_id) == int(pairs[i]["photo_id"]):
-                count_tags += 1
-                # print(">>> ------------------ ", photo_id, " :        ", tag_id, f"{count_tags = }")
-                # print(f"{count_tags = }")
-                if count_tags > TAGS_MAX_NUMBER:
-                #     print("---", pairs[i])
-                #     print({">>> over <<<"})
+            # print(f"{' ' if n<9 else ''}{n+1}. {pair = }") # diagnostic
+
+            for i in range(0, len(pairs)):
+
+                if (photo_id == int(pairs[i]["photo_id"])) and (
+                    tag_id == int(pairs[i]["tag_id"])
+                ):
                     skip = True
-                    # print("break over")
+                    # print("   --- break ident ---") # diagnostic
                     break
 
-        # if (count_tags <= 3) or (not skip):
-        # print(f"                                          {count_tags = },    {skip = }")
-        if not skip:
-            pairs.append(pair)
-        # pairs.append(pair)
+                if int(photo_id) == int(pairs[i]["photo_id"]):
+                    count_tags += 1
+                    if count_tags > TAGS_MAX_NUMBER:
+                        skip = True
+                        # print("   --- break over ---") # diagnostic
+                        break
 
-        new_photo2tag = Photo2Tag(photo_id=photo_id, tag_id=tag_id)
+            if not skip:
+                # pairs.append(pair) # diagnostic
+                new_photo2tag = Photo2Tag(photo_id=photo_id, tag_id=tag_id)
 
-        db.add(new_photo2tag)
-        await db.commit()
-        await db.refresh(new_photo2tag)
-    # print(" ========= ")
-    # print(f"{len(pairs) = }")
-    # pprint(pairs)
+            db.add(new_photo2tag)
+            await db.commit()
+            await db.refresh(new_photo2tag)
+        # print(" ========= ")  # diagnostic
+        # print(f"{len(pairs) = }") # diagnostic
+        # pprint(pairs) # diagnostic
