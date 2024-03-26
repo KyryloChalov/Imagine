@@ -162,13 +162,11 @@ class Auth:
             logout_user = self.cache.get(user.username)
             if logout_user:
                 logout_user = pickle.loads(logout_user)
-                print(logout_user)
-                print(token)
+                # print(logout_user)
+                # print(token)
                 if logout_user == token:
-                    return JSONResponse(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        content={"detail": "Current user is logout"},
-                    )
+                    print("Current user is logout")
+                    raise credentials_exception
 
             self.cache.set(user_hash, pickle.dumps(user))
             self.cache.expire(user_hash, 60)
@@ -182,11 +180,7 @@ class Auth:
                 print(logout_user)
                 print(token)
                 if logout_user == token:
-                    return JSONResponse(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        content={"detail": "Current user is logout"},
-                    )
-
+                    raise credentials_exception
         return user
 
     def create_email_token(self, data: dict):

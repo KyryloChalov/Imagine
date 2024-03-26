@@ -126,7 +126,6 @@ async def delete_user(id: uuid.UUID = Path(),
     dependencies=[Depends(RateLimiter(times=1, seconds=20)), Depends(access_to_route_all)])
 async def change_user_role(body: UserChangeRole, user_id: uuid.UUID = Path(), db: AsyncSession = Depends(get_db), 
                            user: User = Depends(auth_service.get_current_user)):
-    # changed_role = RoleAccess([Role.user, Role.moderator])
     print(body.role)
     print(Role.moderator)
     if body.role == Role.user or body.role == Role.moderator:

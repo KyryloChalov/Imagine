@@ -134,6 +134,7 @@ async def logout(
     """
 
     username = user.username
+    # auth_service.cache.set("ban_token", "True")
     auth_service.cache.set(username, pickle.dumps(token))
 
     # auth_service.cache.expire(username, 60)

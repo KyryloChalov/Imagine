@@ -41,8 +41,6 @@ async def get_all_photos(
     all_photos = await repositories_photos.get_all_photos(
         skip_photos, photos_per_page, db
     )
-    print(all_photos)
-    input()
     return all_photos
 
 
