@@ -28,7 +28,8 @@ class RatingResponseSchema(RatingBaseResponseSchema):
     rating: int = Field(ge=1, le=5)
 
 
-class RatingAVGResponseSchema(RatingBaseResponseSchema):
+class RatingAVGResponseSchema(BaseModel):
+    photo_id: int
     rating: float = Field(ge=1, le=5)
 
 
