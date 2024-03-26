@@ -34,15 +34,15 @@ async def seed_comments(count: int = 100, db: AsyncSession = Depends(get_db)):
     # print(f"{photos_id = }")
     # print(f"{len(photos_id) = }")
 
-    # for _ in range(count):
-    #     new_comment = Comment(
-    #         opinion=fake_data.text(
-    #             random.randint(COMMENT_MIN_LENGTH, COMMENT_MAX_LENGTH)
-    #         )[:-1],
-    #         user_id=users_id[random.randint(0, len(users_id) - 1)],
-    #         photo_id=photos_id[random.randint(0, len(photos_id) - 1)],
-    #     )
+    for _ in range(count):
+        new_comment = Comment(
+            opinion=fake_data.text(
+                random.randint(COMMENT_MIN_LENGTH, COMMENT_MAX_LENGTH)
+            )[:-1],
+            user_id=users_id[random.randint(0, len(users_id) - 1)],
+            photo_id=photos_id[random.randint(0, len(photos_id) - 1)],
+        )
 
-    #     db.add(new_comment)
-    #     await db.commit()
-    #     await db.refresh(new_comment)
+        db.add(new_comment)
+        await db.commit()
+        await db.refresh(new_comment)

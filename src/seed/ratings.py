@@ -43,6 +43,6 @@ async def seed_ratings(db: AsyncSession = Depends(get_db)):
             photo_id=photos_id[random.randint(0, len(photos_id) - 1)],
         )
 
-        # db.add(new_rating)
-        # await db.commit()
-        # await db.refresh(new_rating)
+        db.add(new_rating)
+        await db.commit()
+        await db.refresh(new_rating)
