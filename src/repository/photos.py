@@ -5,7 +5,7 @@ import cloudinary
 import cloudinary.uploader
 from src.conf.config import config
 
-from src.models.models import User, Tag
+from src.models.models import User, Tag, photo_m2m_tag
 from sqlalchemy import select, update, func, extract, and_
 from datetime import date, timedelta
 from fastapi import File, HTTPException
@@ -13,7 +13,7 @@ from fastapi import File, HTTPException
 # from sqlalchemy.sql.sqltypes import Date
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.conf.messages import SOMETHING_WRONG, PHOTO_SUCCESSFULLY_ADDED
+from src.conf.messages import SOMETHING_WRONG, PHOTO_SUCCESSFULLY_ADDED, TAG_SUCCESSFULLY_ADDED
 from src.models.models import Photo
 
 
@@ -79,17 +79,19 @@ async def create_photo(
     )
 
     src_url = r["url"]
-
+    
     check_tags_quantity(list_tags)
     tags = await assembling_tags(list_tags, db)
-
+    
+    id = user.id
     new_photo = Photo(
         path=src_url,
         description=description,
         path_transform=None,
-        user_id=user.id,
+        user_id=id,
         tags=tags,
         public_photo_id=public_photo_id,
+        created_at=DT.datetime.now(),
     )
 
     try:
@@ -100,6 +102,30 @@ async def create_photo(
         await db.rollback()
         raise e
     return {"success message": PHOTO_SUCCESSFULLY_ADDED}
+
+async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
+    stmt = select(Photo).filter_by(id=photo_id)
+    result = await db.execute(stmt)
+    photo = result.scalar_one_or_none()
+    print(photo)
+    print(photo_id)
+    # Если фото нет, вернем ошибку  
+    if photo is None:
+        raise  HTTPException(status_code=404, detail="Photo not found")
+    # Определим существование тега
+    stmt = select(Tag).filter_by(name=name_tag)
+    result = await db.execute(stmt)
+    tag = result.scalar_one_or_none()
+    # Если тега нет, создадим его
+    if tag is None:
+        tag = Tag(name=name_tag)
+        db.add(tag)
+        # Используем flush, чтобы получить id тега, коториий будет добавлена
+        await  db.flush()
+    # Добавляем связь
+    db.execute(photo_m2m_tag.insert(), params={"photo_id": photo.id, "tag_id": tag.id})
+    await db.commit()
+    return {"success message": TAG_SUCCESSFULLY_ADDED}
 
 
 async def edit_photo_description(
@@ -151,8 +177,7 @@ async def get_photo_by_id(photo_id: int, db: AsyncSession) -> dict | None:
 
     result = await db.execute(select(Photo).filter(Photo.id == photo_id))
     photo = result.scalar_one_or_none()
-    print(photo)
-    input()
+    
     return photo
 
 

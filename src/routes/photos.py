@@ -191,7 +191,17 @@ async def change_photo(user: User = Depends(auth_service.get_current_user)):
 #     Видалити рейтинг
 #     """
 #     return user
+@router.post("/tags/{photo_id}")
+async def add_tag(photo_id: int, tag: str, user: User = Depends(auth_service.get_current_user),
+                  db: AsyncSession = Depends(get_db)):
+    tag = await repositories_photos.add_tag_to_photo(photo_id, tag, db)
+    # можна додати теги до світлини за id
+    # якщо тег існує, то додається до списку тегів
+    # якщо тега немає, то додається новий тег
+    # якщо теги закінчились, то додається новий тег
+    return tag
 
+    
 
 @router.get(
     "/search/",

@@ -33,7 +33,6 @@ async def get_user_rating_for_photo(photo_id: int,
     rating = await db.execute(stmt)
     return rating.scalar_one_or_none()
 
-
 async def get_avg_rating(photo_id: int,
                          db: AsyncSession = Depends(get_db),
                          ):

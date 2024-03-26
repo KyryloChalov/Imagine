@@ -38,6 +38,7 @@ async def create_rating(photo_id: int,
                         rate: int = Query(ge=1, le=5),
                         db: AsyncSession = Depends(get_db),
                         user: User = Depends(auth_service.get_current_user), ):
+
     print(f'{rate=}')
 
     photo_exists: Photo | None = await repositories_comments.get_photo_by_id(photo_id, db)
