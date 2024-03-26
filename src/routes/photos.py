@@ -30,6 +30,7 @@ router = APIRouter(prefix="/photos", tags=["photos"])
 async def get_all_photos(
     skip_photos: int = 0,
     photos_per_page: int = 10,
+    user: User = Depends(auth_service.get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     ...
