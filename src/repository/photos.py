@@ -89,7 +89,10 @@ async def create_photo(
         path_transform=None,
         user_id=user.id,
         tags=tags,
+        public_photo_id=public_photo_id,
     )
+    print(new_photo.__dict__)
+    input()
 
     try:
         db.add(new_photo)
