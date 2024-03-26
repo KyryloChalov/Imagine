@@ -27,7 +27,6 @@ async def create_comment(comment: CommentSchema,
     :param: user_id: uuid.UUID - id of user to create comment
     :param: db: AsyncSession - database session
     :return: Comment - created comment
-    "Photo not found"
     """
 
     comment = Comment(opinion=comment.opinion,

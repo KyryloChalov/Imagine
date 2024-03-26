@@ -68,8 +68,8 @@ class Photo(Base, Datefield):
     description: Mapped[str] = mapped_column(String(PHOTO_MAX_DESCRIPTION_LENGTH), nullable=False)
     path_transform: Mapped[str] = mapped_column(String(TRANSFORM_PATH_LENGTH), nullable=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    comment: Mapped["Comment"] = relationship("Comment", backref="photos", lazy="joined", cascade="all, delete-orphan")
-    rating: Mapped["Rating"] = relationship("Rating", backref="photos", lazy="joined", cascade="all, delete-orphan")
+    comment: Mapped["Comment"] = relationship("Comment", backref="photos", cascade="all, delete-orphan")
+    rating: Mapped["Rating"] = relationship("Rating", backref="photos", cascade="all, delete-orphan")
     tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
     public_photo_id: Mapped[str] = mapped_column(String(PHOTO_PATH_LENGTH), nullable=False)
 
