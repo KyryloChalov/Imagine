@@ -51,7 +51,7 @@ async def seed_photo_2_tag(db: AsyncSession = Depends(get_db)):
         tag_id = tags_id[random.randint(0, len(tags_id) - 1)]
         new_photo2tag = Photo2Tag(photo_id=photo_id, tag_id=tag_id)
 
-        print(f"> ---- {photo_id = } -> {tag_id = }")
+        # print(f"> ---- {photo_id = } -> {tag_id = }")
 
         db.add(new_photo2tag)
         await db.commit()

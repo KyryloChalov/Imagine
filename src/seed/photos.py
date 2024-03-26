@@ -45,6 +45,7 @@ async def seed_photos(count: int = 10, db: AsyncSession = Depends(get_db)):
                 fake_data.image_url() if bool(random.getrandbits(1)) else ""
             ),
             user_id=users_id[random.randint(0, len(users_id) - 1)],
+            public_photo_id=fake_data.image_url(),
         )
 
         db.add(new_photo)

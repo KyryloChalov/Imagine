@@ -55,3 +55,15 @@ async def seed_fake_ratings(db: AsyncSession = Depends(get_db)):
 async def seed_fake_photo_2_tag(db: AsyncSession = Depends(get_db)):
     await seed_photo_2_tag(db)
     return {"message": f"You have new fake Photos_2_Tags data"}
+
+
+@router.post("/full_complect")
+async def seed_fake_full_complect(db: AsyncSession = Depends(get_db)):
+    await seed_basic_users(db)
+    await seed_users(5, db)
+    await seed_tags(10, db)
+    await seed_photos(10, db)
+    await seed_comments(50, db)
+    await seed_ratings(db)
+    await seed_photo_2_tag(db)
+    return {"message": "You have complect fake data"}

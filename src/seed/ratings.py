@@ -35,7 +35,7 @@ async def seed_ratings(db: AsyncSession = Depends(get_db)):
     # print(f"{len(photos_id) = }")
 
     count = len(users_id) * len(photos_id) // 2
-    print(f"+++++++++++ {count = }")
+    # print(f"+++++++++++ {count = }")
     for _ in range(count):
         new_rating = Rating(
             rating=random.randint(1, 5),
