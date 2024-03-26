@@ -52,14 +52,12 @@ async def create_comment(photo_id: int,
     :return: A CommentResposeSchema object containing the created comment.
     """
 
-    new_comment = Comment(**comment.dict(), photo_id=photo_id, user_id=user.id)
-    # print(f'{new_comment.photo_id=}')
     photo_exists = await repositories_comments.get_photo_by_id(photo_id, db)
-    if not photo_exists:
+    if photo_exists is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.PHOTO_NOT_FOUND)
-    db.add(new_comment)
-    await db.commit()
-    await db.refresh(new_comment)
+
+    new_comment = await repositories_comments.create_comment(comment, photo_id, user.id, db)
+
     return new_comment
 
 
@@ -75,6 +73,8 @@ async def get_all_comments(limit: int = Query(10, ge=10, le=100),
     """
     Function returns a list of comments for the photo with photo_id
 
+    :limit: int: Get the limit from the query parameters
+    :offset: int: Get the offset from the query parameters
     :param photo_id: int: Get the photo_id from the url
     :param db: Session: Get the database session
     :return: A list of comments for the photo with photo_id. If the photo with photo_id is not found, an HTTPException is raised.
