@@ -15,6 +15,7 @@ async def seed_tags(count: int = 10, db: AsyncSession = Depends(get_db)):
     """
     генерація кількох фейкових tags (за замовченням: count: int = 10)
     """
+    print("tags")
     for _ in range(count):
         name_tag = ""
         name_tag = fake_data.text(random.randint(TAG_MIN_LENGTH, TAG_MAX_LENGTH))

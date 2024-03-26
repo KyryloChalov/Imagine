@@ -23,6 +23,7 @@ async def seed_photos(count: int = 10, db: AsyncSession = Depends(get_db)):
     """
     генерація кількох фейкових photo (за замовченням: count: int = 10)
     """
+    print("photos")
     result = await db.execute(select(User))
     users = result.scalars().all()
     users_id = []

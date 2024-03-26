@@ -16,6 +16,7 @@ async def seed_ratings(db: AsyncSession = Depends(get_db)):
     """
     генерація кількох фейкових comments (за замовченням: count: int = 100)
     """
+    print("ratings")
     result = await db.execute(select(User))
     users = result.scalars().all()
     users_id = []

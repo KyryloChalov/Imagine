@@ -1,10 +1,12 @@
 from faker import Faker
 from fastapi import Depends
+from pprint import pprint
 from sqlalchemy import Integer, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Mapped, mapped_column
 
+from src.conf.constants import TAGS_MAX_NUMBER
 from src.database.db import get_db
 from src.models.models import Photo, Tag, Base
 
@@ -25,6 +27,7 @@ async def seed_photo_2_tag(db: AsyncSession = Depends(get_db)):
     """
     генерація таблиці many_2_many
     """
+    print("photo2tags")
     result = await db.execute(select(Photo))
     photos = result.scalars().all()
 
@@ -44,15 +47,50 @@ async def seed_photo_2_tag(db: AsyncSession = Depends(get_db)):
     # print(f"{tags_id = }")
     # print(f"{len(tags_id) = }")
 
+    pairs: list = []
     count = len(photos_id) * len(tags_id) // 2
     # print(f"+++++++++++ {count = }")
-    for _ in range(count):
+    for n in range(count):
+        pair = {}
         photo_id = photos_id[random.randint(0, len(photos_id) - 1)]
         tag_id = tags_id[random.randint(0, len(tags_id) - 1)]
-        new_photo2tag = Photo2Tag(photo_id=photo_id, tag_id=tag_id)
+        pair = {"photo_id": photo_id, "tag_id": tag_id}
+        # print(f"{n+1}.. {pair = }")
+        skip = False
+        count_tags = 1
 
-        # print(f"> ---- {photo_id = } -> {tag_id = }")
+        for i in range(0, len(pairs)):
+            if int(photo_id) == int(pairs[i]["photo_id"]) and int(tag_id) == int(
+                pairs[i]["tag_id"]
+            ):
+                # print(">>>", photo_id, ":", tag_id, "==", pairs[i])
+                # print({">>> identical <<<"})
+                skip = True
+                # print("break ident")
+                break
+
+            if int(photo_id) == int(pairs[i]["photo_id"]):
+                count_tags += 1
+                # print(">>> ------------------ ", photo_id, " :        ", tag_id, f"{count_tags = }")
+                # print(f"{count_tags = }")
+                if count_tags > TAGS_MAX_NUMBER:
+                #     print("---", pairs[i])
+                #     print({">>> over <<<"})
+                    skip = True
+                    # print("break over")
+                    break
+
+        # if (count_tags <= 3) or (not skip):
+        # print(f"                                          {count_tags = },    {skip = }")
+        if not skip:
+            pairs.append(pair)
+        # pairs.append(pair)
+
+        new_photo2tag = Photo2Tag(photo_id=photo_id, tag_id=tag_id)
 
         db.add(new_photo2tag)
         await db.commit()
         await db.refresh(new_photo2tag)
+    # print(" ========= ")
+    # print(f"{len(pairs) = }")
+    # pprint(pairs)

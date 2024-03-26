@@ -16,6 +16,7 @@ async def seed_comments(count: int = 100, db: AsyncSession = Depends(get_db)):
     """
     генерація кількох фейкових comments (за замовченням: count: int = 100)
     """
+    print("comments")
     result = await db.execute(select(User))
     users = result.scalars().all()
     users_id = []
@@ -25,7 +26,10 @@ async def seed_comments(count: int = 100, db: AsyncSession = Depends(get_db)):
     # print(f"{users_id = }")
     # print(f"{len(users_id) = }")
 
-    result = await db.execute(select(Photo))
+    # рядок result = await db.execute(select(Photo)) видає такі варнінги:
+    # sys:1: SAWarning: Multiple rows returned with uselist=False for eagerly-loaded attribute 'Photo.rating'
+    # sys:1: SAWarning: Multiple rows returned with uselist=False for eagerly-loaded attribute 'Photo.comment'
+    result = await db.execute(select(Photo)) # this row
     photos = result.scalars().all()
     photos_id = []
     for photo in photos:

@@ -22,6 +22,7 @@ async def seed_basic_users(db: AsyncSession = Depends(get_db)):
     upd: 
     додав юзера "banned" - він як звичайний "user", тільки забанений
     """
+    print("basic_users")
     roles = ["admin", "moderator", "user", "guest", "banned"]
     offset = 0
 
@@ -67,6 +68,7 @@ async def seed_users(count_users: int = 3, db: AsyncSession = Depends(get_db)):
     поле confirmed має значення True
     решта полів - за замовченням"""
 
+    print("users")
     result = await db.execute(select(User))
     users = result.scalars().all()
     number_user = len(users) + 1
