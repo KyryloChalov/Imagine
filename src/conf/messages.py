@@ -26,6 +26,7 @@ RATING_VALUE_INCORRECT = (
 )
 SOMETHING_WRONG = "Something went wrong!"
 PHOTO_SUCCESSFULLY_ADDED = "Photo successfully added!"
+TAG_SUCCESSFULLY_ADDED = "Tag successfully added!"
 PHOTO_SUCCESSFULLY_DELETED = "Photo successfully deleted!"
 NO_PHOTO_BY_ID = "Not found photo by this ID"
 

@@ -17,6 +17,7 @@ from src.conf.config import config
 from src.repository import users as repositories_users
 from src.repository import photos as repositories_photos
 from src.conf.messages import NO_PHOTO_BY_ID, PHOTO_SUCCESSFULLY_DELETED
+from src.routes.ratings import access_delete
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
@@ -191,6 +192,55 @@ async def change_photo(user: User = Depends(auth_service.get_current_user)):
 #     Видалити рейтинг
 #     """
 #     return user
+
+
+# @router.post("/tags/{photo_id}")
+# async def add_tag(
+#     photo_id: int,
+#     tag: str,
+#     user: User = Depends(auth_service.get_current_user),
+#     db: AsyncSession = Depends(get_db),
+# ):
+#     tag = await repositories_photos.add_tag_to_photo(photo_id, tag, db)
+#     # можна додати теги до світлини за id
+#     # якщо тег існує, то додається до списку тегів
+#     # якщо тега немає, то додається новий тег
+#     # якщо теги закінчились, то додається новий тег
+#     return tag
+
+
+@router.post("/tags/{photo_id}")
+async def add_tag(
+    photo_id: int,
+    tag: str,
+    user: User = Depends(auth_service.get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    tag = await repositories_photos.add_tag_to_photo(photo_id, tag, db)
+    # можна додати теги до світлини за id
+    # якщо тег існує, то додається до списку тегів
+    # якщо тега немає, то додається новий тег
+    # якщо такий тег під світлиною за id вже є - видається повідомлення
+    return tag
+
+
+@router.delete(
+    "/tags/{photo_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(access_delete)],
+)
+async def delete_tag(
+    photo_id: int,
+    tag: str,
+    user: User = Depends(auth_service.get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    # видаляємо тег до світлини за його ім’ям
+    # якщо фото нема - видається помилка
+    # якщо тега немає, видається сповіщення
+    # якщо такий тег під світлиною за id вже є - видається повідомлення
+    tag = await repositories_photos.del_photo_tag(photo_id, tag, db)
+    return tag
 
 
 @router.get(

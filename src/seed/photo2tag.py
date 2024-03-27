@@ -59,38 +59,38 @@ async def seed_photo_2_tag(db: AsyncSession = Depends(get_db)):
 
         pairs: list = []
         count = len(photos_id) * len(tags_id) // 3
-        for _ in range(count):
+        for n in range(count):
             skip, count_tags, pair = False, 1, {}
 
-            photo_id = int(photos_id[random.randint(0, len(photos_id) - 1)])
-            tag_id = int(tags_id[random.randint(0, len(tags_id) - 1)])
-            pair = {"photo_id": photo_id, "tag_id": tag_id}
+            photo_id = photos_id[random.randint(0, len(photos_id) - 1)]
+            tag_id = tags_id[random.randint(0, len(tags_id) - 1)]
+            pair = {"photo_id": photo_id, "tag_id": tag_id}  # diagnostic
 
             # print(f"{' ' if n<9 else ''}{n+1}. {pair = }") # diagnostic
 
             for i in range(0, len(pairs)):
 
-                if (photo_id == int(pairs[i]["photo_id"])) and (
-                    tag_id == int(pairs[i]["tag_id"])
+                if (int(photo_id) == int(pairs[i]["photo_id"])) and (
+                    int(tag_id) == int(pairs[i]["tag_id"])
                 ):
                     skip = True
-                    # print("   --- break ident ---") # diagnostic
+                    print("   --- break ident ---") # diagnostic
                     break
 
                 if int(photo_id) == int(pairs[i]["photo_id"]):
                     count_tags += 1
                     if count_tags > TAGS_MAX_NUMBER:
                         skip = True
-                        # print("   --- break over ---") # diagnostic
+                        print("   --- break over ---") # diagnostic
                         break
 
             if not skip:
-                # pairs.append(pair) # diagnostic
+                pairs.append(pair) # diagnostic
                 new_photo2tag = Photo2Tag(photo_id=photo_id, tag_id=tag_id)
 
             db.add(new_photo2tag)
             await db.commit()
             await db.refresh(new_photo2tag)
         # print(" ========= ")  # diagnostic
-        # print(f"{len(pairs) = }") # diagnostic
+        print(f"{len(pairs) = }") # diagnostic
         # pprint(pairs) # diagnostic
