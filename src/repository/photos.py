@@ -93,7 +93,6 @@ async def create_photo(
         description=description,
         path_transform=None,
         user_id=id,
-        user_id=id,
         tags=tags,
         public_photo_id=public_photo_id,
         created_at=DT.datetime.now(),
