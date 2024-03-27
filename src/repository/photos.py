@@ -29,8 +29,8 @@ async def get_or_create_tag(tag_name: str, db: AsyncSession) -> Tag:
     if not tag:
         tag = Tag(name=tag_name)
         db.add(tag)
-        await db.commit()
-        await db.refresh(tag)
+        # await db.commit()
+        # await db.refresh(tag)
 
     return tag
 
@@ -193,7 +193,7 @@ async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
 
 
 async def edit_photo_description(
-    user: User, photo_id: int, description: str, list_tags: List[str], db: AsyncSession
+    user: User, photo_id: int, description: str, db: AsyncSession
 ) -> dict:
 
     query_result = await db.execute(
@@ -202,13 +202,13 @@ async def edit_photo_description(
     photo = query_result.scalar()
 
     # Перевіряємо отриманий список тегів на кількість (<=5)
-    check_tags_quantity(list_tags)
-    await assembling_tags(list_tags, db)  # Додаємо відсутні теги у базу
-    tags_from_base = await db.execute(select(Tag).filter(Tag.name.in_(list_tags)))
+    # check_tags_quantity(list_tags)
+    # await assembling_tags(list_tags, db)  # Додаємо відсутні теги у базу
+    # tags_from_base = await db.execute(select(Tag).filter(Tag.name.in_(list_tags)))
 
-    tags = []
-    for tag in tags_from_base:
-        tags.append(tag)
+    # tags = []
+    # for tag in tags_from_base:
+    #     tags.append(tag)
 
     if photo:
         photo.description = description
@@ -253,27 +253,30 @@ async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
     if not photo:
         return False
 
-    if user.role == Role.admin or photo.user_id == user.id:
-        if photo.user_id == user.id:
-            cloudinary.config(
-                cloud_name=config.CLOUDINARY_NAME,
-                api_key=config.CLOUDINARY_API_KEY,
-                api_secret=config.CLOUDINARY_API_SECRET,
-                secure=True,
+    if (
+        user.role == Role.admin
+        or user.role == Role.moderator
+        or photo.user_id == user.id
+    ):
+        cloudinary.config(
+            cloud_name=config.CLOUDINARY_NAME,
+            api_key=config.CLOUDINARY_API_KEY,
+            api_secret=config.CLOUDINARY_API_SECRET,
+            secure=True,
+        )
+        cloudinary.uploader.destroy(photo.public_photo_id)
+        try:
+            # Видалення пов'язаних рейтингів
+            await db.execute(
+                Rating.__table__.delete().where(Rating.photo_id == photo_id)
             )
-            cloudinary.uploader.destroy(photo.public_photo_id)
-            try:
-                # Видалення пов'язаних рейтингів
-                await db.execute(
-                    Rating.__table__.delete().where(Rating.photo_id == photo_id)
-                )
-                # Deleting linked photo
-                await db.delete(photo)
-                await db.commit()
-                return True
-            except Exception as e:
-                await db.rollback()
-                raise e
+            # Deleting linked photo
+            await db.delete(photo)
+            await db.commit()
+            return True
+        except Exception as e:
+            await db.rollback()
+            raise e
 
 
 async def del_photo_tag(photo_id: int, name_tag: str, db: AsyncSession):

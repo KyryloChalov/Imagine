@@ -132,7 +132,6 @@ async def del_photo(
 async def edit_photo_record(
     photo_id: int,
     new_description: str,
-    tags: list[str] = Form(),
     user: User = Depends(auth_service.get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
