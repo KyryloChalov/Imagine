@@ -5,7 +5,7 @@ import cloudinary
 import cloudinary.uploader
 from src.conf.config import config
 
-from src.models.models import User, Tag
+from src.models.models import Rating, User, Tag
 from sqlalchemy import select, update, func, extract, and_
 from datetime import date, timedelta
 from fastapi import File, HTTPException
@@ -82,12 +82,12 @@ async def create_photo(
 
     check_tags_quantity(list_tags)
     tags = await assembling_tags(list_tags, db)
-
+    id = user.id
     new_photo = Photo(
         path=src_url,
         description=description,
         path_transform=None,
-        user_id=user.id,
+        user_id=id,
         tags=tags,
         public_photo_id=public_photo_id,
     )
@@ -151,37 +151,36 @@ async def get_photo_by_id(photo_id: int, db: AsyncSession) -> dict | None:
 
     result = await db.execute(select(Photo).filter(Photo.id == photo_id))
     photo = result.scalar_one_or_none()
-    print(photo)
-    input()
+
     return photo
 
 
-# async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
+async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
 
-#     result = await db.execute(select(Photo).filter(Photo.id == photo_id))
-#     photo = result.scalar_one_or_none()
+    result = await db.execute(select(Photo).filter(Photo.id == photo_id))
+    photo = result.scalar_one_or_none()
 
-#     if not photo:
-#         return False
+    if not photo:
+        return False
 
-#     # if user.role == Role.admin or photo.user_id == user.id:
-#     if photo.user_id == user.id:
-#         cloudinary.config(
-#         cloud_name=config.CLOUDINARY_NAME,
-#         api_key=config.CLOUDINARY_API_KEY,
-#         api_secret=config.CLOUDINARY_API_SECRET,
-#         secure=True,
-#     )
-#         cloudinary.uploader.destroy(photo.cloud_public_id)
-#         try:
-#             # Видалення пов'язаних рейтингів
-#             await db.execute(
-#                 Rating.__table__.delete().where(Rating.photo_id == photo_id)
-#             )
-#             # Deleting linked photo
-#             await db.delete(photo)
-#             await db.commit()
-#             return True
-#         except Exception as e:
-#             await db.rollback()
-#             raise e
+    # if user.role == Role.admin or photo.user_id == user.id:
+    if photo.user_id == user.id:
+        cloudinary.config(
+            cloud_name=config.CLOUDINARY_NAME,
+            api_key=config.CLOUDINARY_API_KEY,
+            api_secret=config.CLOUDINARY_API_SECRET,
+            secure=True,
+        )
+        cloudinary.uploader.destroy(photo.public_photo_id)
+        try:
+            # Видалення пов'язаних рейтингів
+            await db.execute(
+                Rating.__table__.delete().where(Rating.photo_id == photo_id)
+            )
+            # Deleting linked photo
+            await db.delete(photo)
+            await db.commit()
+            return True
+        except Exception as e:
+            await db.rollback()
+            raise e
