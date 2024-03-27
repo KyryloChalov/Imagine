@@ -111,17 +111,16 @@ async def del_photo(
     user: User = Depends(auth_service.get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    ...
     """
     Видалити світлину
     201 або помилку
     """
-    ...
-    # result = await repositories_photos.delete_photo(photo_id, user, db)
-    # if not result:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_404_NOT_FOUND, detail=NO_PHOTO_BY_ID
-    #     )
+
+    result = await repositories_photos.delete_photo(photo_id, user, db)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=NO_PHOTO_BY_ID
+        )
 
     return {"message": PHOTO_SUCCESSFULLY_DELETED}
 
