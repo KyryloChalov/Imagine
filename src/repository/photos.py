@@ -93,6 +93,7 @@ async def create_photo(
         description=description,
         path_transform=None,
         user_id=id,
+        user_id=id,
         tags=tags,
         public_photo_id=public_photo_id,
         created_at=DT.datetime.now(),
@@ -227,6 +228,7 @@ async def get_photo_by_id(photo_id: int, db: AsyncSession) -> dict | None:
 
     result = await db.execute(select(Photo).filter(Photo.id == photo_id))
     photo = result.scalar_one_or_none()
+
 
     return photo
 
