@@ -37,7 +37,18 @@ class PhotosSchema(BaseModel):
     id: int = 1
     path: str
     description: str
-    created_at: Optional[date]
+    created_at: Optional[datetime]
     path_transform: str
     user_id: uuid.UUID
-    updated_at: Optional[date] = Field(None)
+    updated_at: Optional[datetime] = Field(None)
+    
+class PhotosResponse(BaseModel):
+    id: int = 1
+    path: str
+    description: str
+    created_at: Optional[datetime]
+    path_transform: Optional[str]
+    user_id: uuid.UUID
+    updated_at: Optional[datetime] 
+    
+    model_config = ConfigDict(from_attributes=True)  # noqa
