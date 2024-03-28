@@ -112,12 +112,15 @@ async def del_photo(
     user: User = Depends(auth_service.get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    ...
     """
     Видалити світлину
     201 або помилку
     """
+# <<<<<<< oleksandr
     ...
+# =======
+
+# >>>>>>> dev
     result = await repositories_photos.delete_photo(photo_id, user, db)
     if not result:
         raise HTTPException(
@@ -134,7 +137,6 @@ async def del_photo(
 async def edit_photo_record(
     photo_id: int,
     new_description: str,
-    tags: list[str] = Form(),
     user: User = Depends(auth_service.get_current_user),
     db: AsyncSession = Depends(get_db),
 ):

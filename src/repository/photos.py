@@ -29,8 +29,8 @@ async def get_or_create_tag(tag_name: str, db: AsyncSession) -> Tag:
     if not tag:
         tag = Tag(name=tag_name)
         db.add(tag)
-        await db.commit()
-        await db.refresh(tag)
+        # await db.commit()
+        # await db.refresh(tag)
 
     return tag
 
@@ -108,22 +108,57 @@ async def create_photo(
     return {"success message": PHOTO_SUCCESSFULLY_ADDED}
 
 
+
+# async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
+#     stmt = select(Photo).filter_by(id=photo_id)
+#     result = await db.execute(stmt)
+#     photo = result.scalar_one_or_none()
+#     print(photo)
+#     print(photo_id)
+#     # Если фото нет, вернем ошибку
+#     if photo is None:
+#         raise HTTPException(status_code=404, detail="Photo not found")
+#     # Определим существование тега
+#     stmt = select(Tag).filter_by(name=name_tag)
+#     result = await db.execute(stmt)
+#     tag = result.scalar_one_or_none()
+#     # Если тега нет, создадим его
+#     if tag is None:
+#         tag = Tag(name=name_tag)
+#         db.add(tag)
+#         # Используем flush, чтобы получить id тега, коториий будет добавлена
+#         await db.flush()
+#     # Добавляем связь
+#     db.execute(photo_m2m_tag.insert(), params={"photo_id": photo.id, "tag_id": tag.id})
+#     await db.commit()
+#     return {"success message": TAG_SUCCESSFULLY_ADDED}
+
+
+
 async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
     stmt = select(Photo).filter_by(id=photo_id)
     result = await db.execute(stmt)
     photo = result.scalar_one_or_none()
     if photo is None:
-        raise  HTTPException(status_code=404, detail="Photo not found")
+        raise HTTPException(status_code=404, detail="Photo not found")
     # Определим колічество тегов под фото
-    stmt = select(func.count()).select_from(Photo).where(and_(
-                    Photo.id == photo_id,
-                    # mtm
-                    Photo.id == photo_m2m_tag.c.photo_id,
-                ))
+    stmt = (
+        select(func.count())
+        .select_from(Photo)
+        .where(
+            and_(
+                Photo.id == photo_id,
+                # mtm
+                Photo.id == photo_m2m_tag.c.photo_id,
+            )
+        )
+    )
     num_tags: int = await db.execute(stmt)
     num_tags = num_tags.scalar()
     if num_tags >= 5:
-        raise HTTPException(status_code=400, detail="You can add no more 5 tags to one photo.")
+        raise HTTPException(
+            status_code=400, detail="You can add no more 5 tags to one photo."
+        )
     # Определим существование тега
     stmt = select(Tag).filter_by(name=name_tag)
     result = await db.execute(stmt)
@@ -133,29 +168,34 @@ async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
         tag = Tag(name=name_tag)
         db.add(tag)
         # Используем flush, чтобы получить id тега, коториий будет добавлен
-        await  db.flush()
+        await db.flush()
     else:
-    # Определим есть ли у єтого фото такой тег
-        stmt = select(func.count()).select_from(Photo).where(and_(
+        # Определим есть ли у єтого фото такой тег
+        stmt = (
+            select(func.count())
+            .select_from(Photo)
+            .where(
+                and_(
                     Photo.id == photo_id,
                     # mtm
                     Photo.id == photo_m2m_tag.c.photo_id,
                     Tag.id == photo_m2m_tag.c.tag_id,
-                ))
+                )
+            )
+        )
         num_tags: int = await db.execute(stmt)
         num_tags = num_tags.scalar_one_or_none()
         if num_tags:
             raise HTTPException(status_code=400, detail="This photo has had this tag!")
     # Добавляем связь
-    stmt = photo_m2m_tag.insert().values(photo_id = photo.id, tag_id= tag.id)
+    stmt = photo_m2m_tag.insert().values(photo_id=photo.id, tag_id=tag.id)
     await db.execute(stmt)
     await db.commit()
     return {"success message": TAG_SUCCESSFULLY_ADDED}
 
 
-
 async def edit_photo_description(
-    user: User, photo_id: int, description: str, list_tags: List[str], db: AsyncSession
+    user: User, photo_id: int, description: str, db: AsyncSession
 ) -> dict:
 
     query_result = await db.execute(
@@ -164,13 +204,13 @@ async def edit_photo_description(
     photo = query_result.scalar()
 
     # Перевіряємо отриманий список тегів на кількість (<=5)
-    check_tags_quantity(list_tags)
-    await assembling_tags(list_tags, db)  # Додаємо відсутні теги у базу
-    tags_from_base = await db.execute(select(Tag).filter(Tag.name.in_(list_tags)))
+    # check_tags_quantity(list_tags)
+    # await assembling_tags(list_tags, db)  # Додаємо відсутні теги у базу
+    # tags_from_base = await db.execute(select(Tag).filter(Tag.name.in_(list_tags)))
 
-    tags = []
-    for tag in tags_from_base:
-        tags.append(tag)
+    # tags = []
+    # for tag in tags_from_base:
+    #     tags.append(tag)
 
     if photo:
         photo.description = description
@@ -204,7 +244,6 @@ async def get_photo_by_id(photo_id: int, db: AsyncSession) -> dict | None:
     result = await db.execute(select(Photo).filter(Photo.id == photo_id))
     photo = result.scalar_one_or_none()
 
-
     return photo
 
 
@@ -216,6 +255,7 @@ async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
     if not photo:
         return False
 
+# <<<<<<< oleksandr
     if user.role == Role.admin or photo.user_id == user.id:
         cloudinary.config(
         cloud_name=config.CLOUDINARY_NAME,
@@ -223,6 +263,19 @@ async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
         api_secret=config.CLOUDINARY_API_SECRET,
         secure=True,
     )
+# =======
+#    if (
+#        user.role == Role.admin
+#        or user.role == Role.moderator
+#        or photo.user_id == user.id
+#    ):
+#        cloudinary.config(
+#            cloud_name=config.CLOUDINARY_NAME,
+#            api_key=config.CLOUDINARY_API_KEY,
+#            api_secret=config.CLOUDINARY_API_SECRET,
+#            secure=True,
+#        )
+# >>>>>>> dev
         cloudinary.uploader.destroy(photo.public_photo_id)
         try:
             # Видалення пов'язаних рейтингів
@@ -243,30 +296,35 @@ async def del_photo_tag(photo_id: int, name_tag: str, db: AsyncSession):
     result = await db.execute(stmt)
     photo = result.scalar_one_or_none()
     if photo is None:
-        raise  HTTPException(status_code=404, detail="Photo not found")
+        raise HTTPException(status_code=404, detail="Photo not found")
     # Определим существование тега
     stmt = select(Tag).filter_by(name=name_tag)
     result = await db.execute(stmt)
     tag = result.scalar_one_or_none()
     # Если тега нет, сообщаем ошибку
     if tag is None:
-        raise  HTTPException(status_code=404, detail="Tag not found")
+        raise HTTPException(status_code=404, detail="Tag not found")
     # Определим есть ли у єтого фото такой тег
-    stmt = select(Photo).where(and_(
-                Photo.id == photo_id,
-                # mtm
-                Photo.id == photo_m2m_tag.c.photo_id,
-                tag.id == photo_m2m_tag.c.tag_id,
-            ))
+    stmt = select(Photo).where(
+        and_(
+            Photo.id == photo_id,
+            # mtm
+            Photo.id == photo_m2m_tag.c.photo_id,
+            tag.id == photo_m2m_tag.c.tag_id,
+        )
+    )
     photo_tag = await db.execute(stmt)
     photo_tag = photo_tag.scalar_one_or_none()
     if not photo_tag:
         raise HTTPException(status_code=400, detail="This photo don't has this tag!")
     # удаляем связь из m2m
-    stmt = delete(photo_m2m_tag).where(photo_m2m_tag.c.photo_id == photo_id, photo_m2m_tag.c.tag_id == tag.id)
+    stmt = delete(photo_m2m_tag).where(
+        photo_m2m_tag.c.photo_id == photo_id, photo_m2m_tag.c.tag_id == tag.id
+    )
     await db.execute(stmt)
     await db.commit()
     return {"success message": "Tag successfully deleted"}
+  
 
 async def search_photo(search_keyword: str, photos_per_page: int, skip_photos: int,
                     db: AsyncSession, user: User) -> list[Photo]:
@@ -364,3 +422,4 @@ async def search_photos(search_keyword: str, rate_min: float, rate_max: float, p
     # if photos == []:
     #     raise  HTTPException(status_code=400, detail=f"Photo with keyword={search_keyword} not found")
     return photos
+
