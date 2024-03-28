@@ -14,10 +14,12 @@ from sqlalchemy import (
     ForeignKey,
     Boolean,
 )
+
 # from sqlalchemy.orm import column_property
 from sqlalchemy.sql.sqltypes import Date, DateTime
 from sqlalchemy_utils import EmailType
 from fastapi_users_db_sqlalchemy import generics
+
 # from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase
 
@@ -58,28 +60,46 @@ photo_m2m_tag = Table(
 
 class Datefield:
     created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
-    updated_at: Mapped[date] = mapped_column("updated_at", DateTime, default=func.now(), onupdate=func.now())
+    updated_at: Mapped[date] = mapped_column(
+        "updated_at", DateTime, default=func.now(), onupdate=func.now()
+    )
 
 
 class Photo(Base, Datefield):
     __tablename__ = "photos"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     path: Mapped[str] = mapped_column(String(PHOTO_PATH_LENGTH), nullable=False)
-    description: Mapped[str] = mapped_column(String(PHOTO_MAX_DESCRIPTION_LENGTH), nullable=False)
-    path_transform: Mapped[str] = mapped_column(String(TRANSFORM_PATH_LENGTH), nullable=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    comment: Mapped["Comment"] = relationship("Comment", backref="photos", cascade="all, delete-orphan")
-    rating: Mapped["Rating"] = relationship("Rating", backref="photos", cascade="all, delete-orphan")
+    description: Mapped[str] = mapped_column(
+        String(PHOTO_MAX_DESCRIPTION_LENGTH), nullable=False
+    )
+    path_transform: Mapped[str] = mapped_column(
+        String(TRANSFORM_PATH_LENGTH), nullable=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    comment: Mapped["Comment"] = relationship(
+        "Comment", backref="photos", cascade="all, delete-orphan"
+    )
+    rating: Mapped["Rating"] = relationship(
+        "Rating", backref="photos", cascade="all, delete-orphan"
+    )
     tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
-    public_photo_id: Mapped[str] = mapped_column(String(PHOTO_PATH_LENGTH), nullable=False)
+    public_photo_id: Mapped[str] = mapped_column(
+        String(PHOTO_PATH_LENGTH), nullable=False
+    )
 
 
 class Comment(Base, Datefield):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     opinion: Mapped[str] = mapped_column(String(COMMENT_MAX_LENGTH), nullable=False)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    photo_id: Mapped[int] = mapped_column(ForeignKey("photos.id", ondelete="CASCADE"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    photo_id: Mapped[int] = mapped_column(
+        ForeignKey("photos.id", ondelete="CASCADE"), nullable=False
+    )
 
 
 class Role(enum.Enum):
@@ -90,25 +110,72 @@ class Role(enum.Enum):
 
 class User(Base, Datefield):
     __tablename__ = "users"
-    id: Mapped[uuid.UUID] = mapped_column(generics.GUID(), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(
+        generics.GUID(), primary_key=True, default=uuid.uuid4
+    )
     name: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH), nullable=True)
-    username: Mapped[str] = mapped_column(String(USERNAME_MAX_LENGTH), nullable=False, unique=True)
-    email: Mapped[str] = mapped_column(String(EMAIL_MAX_LENGTH), nullable=False, unique=True)
+    username: Mapped[str] = mapped_column(
+        String(USERNAME_MAX_LENGTH), nullable=False, unique=True
+    )
+    email: Mapped[str] = mapped_column(
+        String(EMAIL_MAX_LENGTH), nullable=False, unique=True
+    )
     password: Mapped[str] = mapped_column(String(PASSWORD_MAX_LENGTH), nullable=False)
     refresh_token: Mapped[str] = mapped_column(String(TOKEN_MAX_LENGTH), nullable=True)
-    role: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.user, nullable=False)
+    role: Mapped[Enum] = mapped_column(
+        "role", Enum(Role), default=Role.user, nullable=False
+    )
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned_at: Mapped[date] = mapped_column(Date, nullable=True)
     avatar: Mapped[str] = mapped_column(String(AVATAR_PATH_LENGTH), nullable=True)
-    photo: Mapped["Photo"] = relationship("Photo", backref="users", cascade="all, delete-orphan")
-    comment: Mapped["Comment"] = relationship("Comment", backref="users", cascade="all, delete-orphan")
-    rating: Mapped["Rating"] = relationship("Rating", backref="users", cascade="all, delete-orphan")
+    photo: Mapped["Photo"] = relationship(
+        "Photo", backref="users", cascade="all, delete-orphan"
+    )
+    comment: Mapped["Comment"] = relationship(
+        "Comment", backref="users", cascade="all, delete-orphan"
+    )
+    rating: Mapped["Rating"] = relationship(
+        "Rating", backref="users", cascade="all, delete-orphan"
+    )
 
 
 class Rating(Base, Datefield):
     __tablename__ = "ratings"
     id: Mapped[int] = mapped_column(primary_key=True)
     rating: Mapped[int] = mapped_column(nullable=False)
-    photo_id: Mapped[int] = mapped_column(ForeignKey("photos.id", ondelete="CASCADE"), nullable=False)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    photo_id: Mapped[int] = mapped_column(
+        ForeignKey("photos.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+
+
+class CropMode(str, enum.Enum):
+    fill = "fill"
+    thumb = "thumb"
+    fit = "fit"
+    limit = "limit"
+    pad = "pad"
+    scale = "scale"
+
+
+class EffectMode(str, enum.Enum):
+    vignette = "vignette"
+    sepia = "sepia"
+    pixelate = "pixelate:1"
+    cartoonify = "cartoonify"
+
+
+class Effect(str, enum.Enum):
+    al_dente = "art:al_dente"
+    audrey = "art:audrey"
+    eucalyptus = "art:eucalyptus"
+    zorro = "art:zorro"
+    frost = "art:frost"
+    hokusai = "art:hokusai"
+    incognito = "art:incognito"
+    peacock = "art:peacock"
+    primavera = "art:primavera"
+    quartz = "art:quartz"
