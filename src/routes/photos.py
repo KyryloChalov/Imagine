@@ -3,12 +3,13 @@ import time
 from typing import Annotated, List
 
 
-from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, Depends, Query, status, UploadFile, File, Form
 
 from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
+from src.schemas.photos import PhotosResponse
 from src.database.db import get_db
 from src.models.models import User, Photo
 from src.schemas.user import UserResponse
@@ -117,11 +118,11 @@ async def del_photo(
     201 або помилку
     """
     ...
-    # result = await repositories_photos.delete_photo(photo_id, user, db)
-    # if not result:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_404_NOT_FOUND, detail=NO_PHOTO_BY_ID
-    #     )
+    result = await repositories_photos.delete_photo(photo_id, user, db)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=NO_PHOTO_BY_ID
+        )
 
     return {"message": PHOTO_SUCCESSFULLY_DELETED}
 
@@ -168,47 +169,6 @@ async def change_photo(user: User = Depends(auth_service.get_current_user)):
     return user
 
 
-# @router.post(
-#     "/{photo_id}/rating/",
-#     response_model=UserResponse,
-#     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-# )
-# async def put_rating(user: User = Depends(auth_service.get_current_user)):
-#     ...
-#     """
-#     Поставити рейтинг
-#     """
-#     return user
-
-
-# @router.delete(
-#     "/{photo_id}/rating/",
-#     response_model=UserResponse,
-#     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-# )
-# async def delete_rating(user: User = Depends(auth_service.get_current_user)):
-#     ...
-#     """
-#     Видалити рейтинг
-#     """
-#     return user
-
-
-# @router.post("/tags/{photo_id}")
-# async def add_tag(
-#     photo_id: int,
-#     tag: str,
-#     user: User = Depends(auth_service.get_current_user),
-#     db: AsyncSession = Depends(get_db),
-# ):
-#     tag = await repositories_photos.add_tag_to_photo(photo_id, tag, db)
-#     # можна додати теги до світлини за id
-#     # якщо тег існує, то додається до списку тегів
-#     # якщо тега немає, то додається новий тег
-#     # якщо теги закінчились, то додається новий тег
-#     return tag
-
-
 @router.post("/tags/{photo_id}")
 async def add_tag(
     photo_id: int,
@@ -216,11 +176,19 @@ async def add_tag(
     user: User = Depends(auth_service.get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    The add_tag function adds a tag to the photo with the given id.
+        If there is no such tag, it will be created.
+        If there is already such a tag under this photo, an error message will be displayed.
+    
+    :param photo_id: int: Identify the photo to which we want to add a tag
+    :param tag: str: Specify the tag that will be added to the photo
+    :param user: User: Get the current user
+    :param db: AsyncSession: Get the database session
+    :param : Get the photo id
+    :return: A tag, which is added to the photo
+    """
     tag = await repositories_photos.add_tag_to_photo(photo_id, tag, db)
-    # можна додати теги до світлини за id
-    # якщо тег існує, то додається до списку тегів
-    # якщо тега немає, то додається новий тег
-    # якщо такий тег під світлиною за id вже є - видається повідомлення
     return tag
 
 
@@ -235,42 +203,66 @@ async def delete_tag(
     user: User = Depends(auth_service.get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # видаляємо тег до світлини за його ім’ям
-    # якщо фото нема - видається помилка
-    # якщо тега немає, видається сповіщення
-    # якщо такий тег під світлиною за id вже є - видається повідомлення
+    
+    """
+    The delete_tag function deletes a tag of the photo_id from the database.
+        Args:
+            photo_id (int): The id of the photo to delete a tag from.
+            tag (str): The name of the tag to be deleted.
+        Returns:
+            dict: A dictionary containing information about whether or not 
+                deleting was successful and if it wasn't, why it failed.
+    
+    :param photo_id: int: Identify the photo to delete a tag from
+    :param tag: str: Specify the tag to be deleted
+    :param user: User: Get the current user from the auth_service
+    :param db: AsyncSession: Pass the database connection to the function
+    :return: A tag object
+    :doc-author: Trelent
+    """
     tag = await repositories_photos.del_photo_tag(photo_id, tag, db)
     return tag
 
 
 @router.get(
     "/search/",
-    response_model=UserResponse,
+    response_model=list[PhotosResponse],
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
-async def search_photo(user: User = Depends(auth_service.get_current_user)):
+async def search_photo(photos_per_page: int = Query(10, ge=10, le=500),
+                    skip_photos: int = Query(0, ge=0),
+                    search_keyword: str = Query(),
+                    rate_min: float = Query(None, ge=0, le=5),
+                    rate_max: float = Query(None, ge=0, le=5),
+                    user: User = Depends(auth_service.get_current_user),
+                    db: AsyncSession = Depends(get_db)):
     ...
     """
     Пошук по тегу, слову, користувачу
     "tag, word для адмінів + {user_id}"
     Пагінований список або помилку
     """
-    return user
+    if rate_min is None and rate_max is None:
+        photos = await repositories_photos.search_photo(search_keyword, photos_per_page, skip_photos, db, user)
+    else:
+        # надо понять с фільтрацией
+        photos = await repositories_photos.search_photos(search_keyword, rate_min, rate_max,
+                                                         photos_per_page, skip_photos, 
+                                                         db, user)
+    return photos
 
-    # потребує пояснення - Юрій?
 
-
-@router.get(
-    "/search/filter",
-    response_model=UserResponse,
-    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-)
-async def filter_photo(user: User = Depends(auth_service.get_current_user)):
-    ...
-    """
-    потребує пояснення - Юрій?
-    Сортування Фільтрація результатів пошуку
-    "rating=BIG|SMALL,  date=NEW|OLD для адмінів+  {user_id}"
-    Пагінований список або помилку
-    """
-    return user
+# @router.get(
+#     "/search/filter",
+#     response_model=UserResponse,
+#     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+# )
+# async def filter_photo(user: User = Depends(auth_service.get_current_user)):
+#     ...
+#     """
+#     потребує пояснення - Юрій?
+#     Сортування Фільтрація результатів пошуку
+#     "rating=BIG|SMALL,  date=NEW|OLD для адмінів+  {user_id}"
+#     Пагінований список або помилку
+#     """
+#     return user

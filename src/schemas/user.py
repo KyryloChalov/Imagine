@@ -13,7 +13,6 @@ from src.conf.constants import (
     PASSWORD_MAX_LENGTH,
 )
 
-
 class UserSchema(BaseModel):
     name: str = Field(min_length=NAME_MIN_LENGTH, max_length=NAME_MAX_LENGTH)
     username: str = Field(
