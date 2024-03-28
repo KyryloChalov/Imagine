@@ -6,7 +6,7 @@ import cloudinary.uploader
 from src.conf.config import config
 
 from src.models.models import Rating, Role, User, Tag, photo_m2m_tag
-from sqlalchemy import select, update, func, extract, and_, delete
+from sqlalchemy import or_, select, update, func, extract, and_, delete
 from datetime import date, timedelta
 from fastapi import File, HTTPException
 
@@ -108,6 +108,7 @@ async def create_photo(
     return {"success message": PHOTO_SUCCESSFULLY_ADDED}
 
 
+
 # async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
 #     stmt = select(Photo).filter_by(id=photo_id)
 #     result = await db.execute(stmt)
@@ -131,6 +132,7 @@ async def create_photo(
 #     db.execute(photo_m2m_tag.insert(), params={"photo_id": photo.id, "tag_id": tag.id})
 #     await db.commit()
 #     return {"success message": TAG_SUCCESSFULLY_ADDED}
+
 
 
 async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
@@ -253,17 +255,27 @@ async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
     if not photo:
         return False
 
-    if (
-        user.role == Role.admin
-        or user.role == Role.moderator
-        or photo.user_id == user.id
-    ):
+# <<<<<<< oleksandr
+    if user.role == Role.admin or photo.user_id == user.id:
         cloudinary.config(
-            cloud_name=config.CLOUDINARY_NAME,
-            api_key=config.CLOUDINARY_API_KEY,
-            api_secret=config.CLOUDINARY_API_SECRET,
-            secure=True,
-        )
+        cloud_name=config.CLOUDINARY_NAME,
+        api_key=config.CLOUDINARY_API_KEY,
+        api_secret=config.CLOUDINARY_API_SECRET,
+        secure=True,
+    )
+# =======
+#    if (
+#        user.role == Role.admin
+#        or user.role == Role.moderator
+#        or photo.user_id == user.id
+#    ):
+#        cloudinary.config(
+#            cloud_name=config.CLOUDINARY_NAME,
+#            api_key=config.CLOUDINARY_API_KEY,
+#            api_secret=config.CLOUDINARY_API_SECRET,
+#            secure=True,
+#        )
+# >>>>>>> dev
         cloudinary.uploader.destroy(photo.public_photo_id)
         try:
             # Видалення пов'язаних рейтингів
@@ -312,3 +324,102 @@ async def del_photo_tag(photo_id: int, name_tag: str, db: AsyncSession):
     await db.execute(stmt)
     await db.commit()
     return {"success message": "Tag successfully deleted"}
+  
+
+async def search_photo(search_keyword: str, photos_per_page: int, skip_photos: int,
+                    db: AsyncSession, user: User) -> list[Photo]:
+    print("photo")
+    stmt = select(Tag).filter_by(name=search_keyword)
+    result = await db.execute(stmt)
+    tag = result.scalar_one_or_none()
+    # Если тега нет, ищем только по Description
+    stmt = select(Photo).where(Photo.description.ilike(f"%{search_keyword}%")).order_by(
+        Photo.id).offset(skip_photos).limit(photos_per_page)
+    result = await db.execute(stmt)
+    photos_key_word = result.scalars().all()
+    if tag is None:
+        print("tag is none")
+        return photos_key_word
+    # ищем и по Description
+    stmt = select(Photo).where(and_(
+                    Tag.name == search_keyword,
+                    # mtm
+                    Photo.id == photo_m2m_tag.c.photo_id,
+                    Tag.id == photo_m2m_tag.c.tag_id,
+            )).order_by(Photo.id).offset(skip_photos).limit(photos_per_page)
+    
+    result = await db.execute(stmt)
+    photos_by_tags = result.scalars().all()
+    photos = photos_key_word + [x for x in photos_by_tags if x not in photos_key_word]
+    if photos == []:
+        raise  HTTPException(status_code=400, detail=f"Photo with keyword={search_keyword} not found")
+    return photos
+
+async def search_photos(search_keyword: str, rate_min: float, rate_max: float, photos_per_page: int, skip_photos: int,
+                    db: AsyncSession, user: User) -> list[Photo]:
+    # Фільтр не работает - падает сервер
+    print("photos")
+    stmt = select(Tag).filter_by(name=search_keyword)
+    result = await db.execute(stmt)
+    tag = result.scalar_one_or_none()
+    stmt = select(Photo).where(Photo.description.ilike(f"%{search_keyword}%")).order_by(
+        Photo.id).offset(skip_photos).limit(photos_per_page)
+    result = await db.execute(stmt)
+    photos_key_word = result.scalars().all()
+    if tag is None:
+        print("tag is none")
+        return photos_key_word
+    print("ищем и по Description")
+    if rate_min or rate_max:
+        rate_min = rate_min or 0.1
+        rate_max = rate_max or 5.0
+        print(rate_min, rate_max)
+        stmt = select(Photo).where(and_(
+                    Tag.name == search_keyword,
+                    # mtm
+                    Photo.id == photo_m2m_tag.c.photo_id,
+                    Tag.id == photo_m2m_tag.c.tag_id,
+                    # func.avg(Photo.rating) <= rate_max,
+                    # func.avg(Photo.rating) >= rate_min,
+                    )).order_by(Photo.id).offset(skip_photos).limit(photos_per_page)
+        result = await db.execute(stmt)
+        photos_by_tags = result.scalars().all()
+    photos = photos_key_word + [x for x in photos_by_tags if x not in photos_key_word]
+    if photos == []:
+        raise  HTTPException(status_code=400, detail=f"Photo with keyword={search_keyword} not found")
+    
+#    2-вариант - тоже не рабочий 
+    # stmt = select(Tag).filter_by(name=search_keyword)
+    # result = await db.execute(stmt)
+    # tag = result.scalar_one_or_none()
+    # stmt = select(Photo).where(Photo.description.ilike(f"%{search_keyword}%"))
+    # print(stmt)
+    # if rate_min or rate_max:
+    #     rate_min = rate_min or 0.1
+    #     rate_max = rate_max or 5.0
+    #     print(rate_min, rate_max, Rating.rating)
+    #     stmt = select(Photo).filter(and_(func.avg(Photo.rating) >= rate_min, 
+    #         func.avg(Photo.rating) <= rate_max)).where(Photo.description.ilike(f"%{search_keyword}%"))
+    #     # order_by(Photo.id).offset(skip_photos).limit(photos_per_page) 
+    #     print("+++++++++++++++++")
+ 
+    # result = await db.execute(stmt)
+    # photos_key_word = result.scalars().all()
+    # # Если тега нет, ищем только по Description
+    # if tag is None:
+    #     print("tag is none")
+    #     return photos_key_word
+    # # ищем по Description и по тегу
+    # stmt = select(Photo).where(and_(
+    #                 Tag.name == search_keyword,
+    #                 # mtm
+    #                 Photo.id == photo_m2m_tag.c.photo_id,
+    #                 Tag.id == photo_m2m_tag.c.tag_id,
+    #         )).order_by(Photo.id).offset(skip_photos).limit(photos_per_page)
+    # result = await db.execute(stmt)
+    # photos_by_tags = result.scalars().all()
+    # photos = photos_key_word + [x for x in photos_by_tags if x not in photos_key_word]
+    # if photos == []:
+    #     raise  HTTPException(status_code=400, detail=f"Photo with keyword={search_keyword} not found")
+    return photos
+

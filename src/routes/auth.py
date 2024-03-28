@@ -31,6 +31,7 @@ from src.schemas.user import (
 )
 from src.services.auth import auth_service
 from src.services.email import send_email, send_reset_passw_email
+from src.conf.constants import ACCESS_TOKEN_TIME_LIVE
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 get_refresh_token = HTTPBearer()
@@ -136,8 +137,7 @@ async def logout(
     username = user.username
     # auth_service.cache.set("ban_token", "True")
     auth_service.cache.set(username, pickle.dumps(token))
-
-    # auth_service.cache.expire(username, 60)
+    auth_service.cache.expire(username, 60*ACCESS_TOKEN_TIME_LIVE)
     return {"message": messages.LOGOUT}
 
 

@@ -13,6 +13,7 @@ from jose import JWTError, jwt
 from src.database.db import get_db
 from src.repository import users as repository_users
 from src.conf.config import config
+from src.conf.constants import ACCESS_TOKEN_TIME_LIVE
 
 
 class Auth:
@@ -51,7 +52,7 @@ class Auth:
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
-            expire = datetime.utcnow() + timedelta(minutes=15)
+            expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_TIME_LIVE)
         to_encode.update(
             {"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"}
         )
