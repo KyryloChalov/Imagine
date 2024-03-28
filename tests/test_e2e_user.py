@@ -15,3 +15,11 @@ def test_get_me(client, get_token, monkeypatch):
         headers = {"Authorization": f"Bearer {token}"}
         response = client.get("users/me", headers=headers)
         assert response.status_code == 200, response.text
+
+#TODO test update avatar
+#TODO test get all users
+#TODO test update user
+#TODO test change user role
+#TODO test get some user info
+#TODO test delete user
+        

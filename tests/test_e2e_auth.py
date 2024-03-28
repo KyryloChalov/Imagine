@@ -183,7 +183,12 @@ def test_reset_password_not_the_same(client, get_email_token):
     data = response.json()
     assert data["detail"] == messages.DIFFERENT_PASSWORD
     
+#TODO test logout
     
-
+def test_logout(client):
+    response = client.post("api/auth/logout")
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["message"] == messages.LOGOUT
         
         
