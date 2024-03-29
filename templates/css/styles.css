@@ -16,6 +16,7 @@ body {
 .logo {
   margin-top: 32px;
   margin-bottom: 60px;
+  margin-left: 32px;
 }
 
 .main-page {
@@ -31,7 +32,7 @@ body {
     background: #fff;
     padding: 80px 60px 60px 60px;
     box-sizing: border-box;
-    width: 570px;
+    width: 670px;
     height: 460px;
     flex-shrink: 0;
 }
@@ -52,7 +53,8 @@ body {
     font-weight: 600;
     line-height: 72px;
     margin-top: 0;
-    margin-bottom: 24px;
+    margin-bottom: 8px;
+    margin-left: 80px;
 }
 
 .ordinary-text {
@@ -61,7 +63,8 @@ body {
     font-weight: 400;
     line-height: 24px;
     margin-top: 0;
-    margin-bottom: 16px;
+    margin-bottom: 36px;
+    margin-left: 84px;
 }
 
 .main-page-btn {
@@ -81,7 +84,7 @@ body {
 }
 
 .lennon-item {
-  margin-top: 100px;
+  margin-top: 120px;
   width: 814px;
 }
 
@@ -113,9 +116,19 @@ body {
 }
 
 .gus-fact-item {
-  width: 374px;
+  width: 274px;
 }
 
+
+.gus-fact-item-title-2 {
+  color: #1b1d1f;
+  text-align: center;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 36px;
+  margin-top: 0px;
+  margin-bottom: 8px;
+}
 
 .gus-fact-item-title {
   color: #1b1d1f;
@@ -139,18 +152,19 @@ body {
 /* form-page */
 
 .form-page {
-  background: linear-gradient(90deg, #fcfefe 0%, #a5deff 100%);
-  width: 1360px;
+  /* background: linear-gradient(90deg, #fcfefe 0%, #a5deff 100%); */
+  /* width: 1360px; */
   height: 699px;
   flex-shrink: 0;
   padding-top: 80px;
   padding-bottom: 80px;
+  margin-left: 96;
 }
 
 .form {
   border-radius: 40px;
   background: #fff;
-  width: 573px;
+  /* width: 573px; */
   /* height: 580px; */
   flex-shrink: 0;
   padding-top: 32px;
