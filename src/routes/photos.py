@@ -245,26 +245,11 @@ async def search_photo(photos_per_page: int = Query(10, ge=10, le=500),
     Пагінований список або помилку
     """
     if rate_min is None and rate_max is None:
-        photos = await repositories_photos.search_photo(search_keyword, photos_per_page, skip_photos, db, user)
+        photos = await repositories_photos.search_photos(search_keyword, photos_per_page, skip_photos, db, user)
     else:
-        # надо понять с фільтрацией
-        photos = await repositories_photos.search_photos(search_keyword, rate_min, rate_max,
+        photos = await repositories_photos.search_photos_by_filter(search_keyword, rate_min, rate_max,
                                                          photos_per_page, skip_photos, 
                                                          db, user)
+    if photos == []:
+        raise  HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Photo with the specified search parameters was not found")
     return photos
-
-
-# @router.get(
-#     "/search/filter",
-#     response_model=UserResponse,
-#     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-# )
-# async def filter_photo(user: User = Depends(auth_service.get_current_user)):
-#     ...
-#     """
-#     потребує пояснення - Юрій?
-#     Сортування Фільтрація результатів пошуку
-#     "rating=BIG|SMALL,  date=NEW|OLD для адмінів+  {user_id}"
-#     Пагінований список або помилку
-#     """
-#     return user
