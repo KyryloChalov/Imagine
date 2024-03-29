@@ -1,9 +1,12 @@
 import datetime as DT
 from typing import List
 import uuid
+import qrcode
 import cloudinary
 import cloudinary.uploader
 from src.conf.config import config
+from src.conf.constants import ALLOWED_CROP_MODES
+from src.conf.messages import PHOTO_NOT_FOUND
 
 from src.models.models import Rating, Role, User, Tag, photo_m2m_tag
 from sqlalchemy import or_, select, update, func, extract, and_, delete
@@ -19,6 +22,15 @@ from src.conf.messages import (
     TAG_SUCCESSFULLY_ADDED,
 )
 from src.models.models import Photo
+
+
+def init_cloudinary():
+    cloudinary.config(
+        cloud_name=config.CLOUDINARY_NAME,
+        api_key=config.CLOUDINARY_API_KEY,
+        api_secret=config.CLOUDINARY_API_SECRET,
+        secure=True,
+    )
 
 
 async def get_or_create_tag(tag_name: str, db: AsyncSession) -> Tag:
@@ -53,6 +65,31 @@ async def assembling_tags(source_tags: list[str], db: AsyncSession) -> List[Tag]
     return tags
 
 
+async def get_QR_code(path: str, unique_photo_id: uuid, db: AsyncSession) -> str:
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+
+    qr.add_data(path)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    qr_code_file = "my_qr_code.png"
+    img.save(qr_code_file)
+
+    init_cloudinary()
+    upload_result = cloudinary.uploader.upload(
+        qr_code_file,
+        public_id=f"Qr_Code/{unique_photo_id}",
+        overwrite=True,
+        invalidate=True,
+    )
+    return upload_result["secure_url"]
+
+
 async def create_photo(
     photofile: File(),
     description: str | None,
@@ -69,24 +106,23 @@ async def create_photo(
     :return: A contact object
     :doc-author: Trelent
     """
-    cloudinary.config(
-        cloud_name=config.CLOUDINARY_NAME,
-        api_key=config.CLOUDINARY_API_KEY,
-        api_secret=config.CLOUDINARY_API_SECRET,
-        secure=True,
-    )
+    init_cloudinary()
 
     unique_photo_id = uuid.uuid4()
     public_photo_id = f"Photos_of_user/{user.username}/{unique_photo_id}"
-    r = cloudinary.uploader.upload(
-        photofile.file, public_id=public_photo_id, overwrite=True
-    )
+    try:
+        r = cloudinary.uploader.upload(
+            photofile.file, public_id=public_photo_id, overwrite=True
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Wrong file type (need a picture)!")
 
     src_url = r["url"]
 
     check_tags_quantity(list_tags)
     tags = await assembling_tags(list_tags, db)
 
+    # QR_code = await get_QR_code(src_url, unique_photo_id, db)
     id = user.id
     new_photo = Photo(
         path=src_url,
@@ -95,7 +131,6 @@ async def create_photo(
         user_id=id,
         tags=tags,
         public_photo_id=public_photo_id,
-        created_at=DT.datetime.now(),
     )
 
     try:
@@ -274,13 +309,46 @@ async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
     if not photo:
         return False
 
-    if user.role == Role.admin or user.role == Role.moderator or photo.user_id == user.id:
-        cloudinary.config(
-        cloud_name=config.CLOUDINARY_NAME,
-        api_key=config.CLOUDINARY_API_KEY,
-        api_secret=config.CLOUDINARY_API_SECRET,
-        secure=True,
-    )
+#<<<<<<< oleksandr
+#    if user.role == Role.admin or user.role == Role.moderator or photo.user_id == user.id:
+#        cloudinary.config(
+#        cloud_name=config.CLOUDINARY_NAME,
+#        api_key=config.CLOUDINARY_API_KEY,
+#        api_secret=config.CLOUDINARY_API_SECRET,
+#        secure=True,
+#    )
+#=======
+#<<<<<<< transform
+    if (
+        user.role == Role.admin
+        or user.role == Role.moderator
+        or photo.user_id == user.id
+    ):
+        init_cloudinary()
+# =======
+# <<<<<<< oleksandr
+#    if user.role == Role.admin or photo.user_id == user.id:
+#        cloudinary.config(
+#        cloud_name=config.CLOUDINARY_NAME,
+#        api_key=config.CLOUDINARY_API_KEY,
+#        api_secret=config.CLOUDINARY_API_SECRET,
+#        secure=True,
+#    )
+# =======
+#    if (
+#        user.role == Role.admin
+#        or user.role == Role.moderator
+#        or photo.user_id == user.id
+#    ):
+#        cloudinary.config(
+#            cloud_name=config.CLOUDINARY_NAME,
+#            api_key=config.CLOUDINARY_API_KEY,
+#            api_secret=config.CLOUDINARY_API_SECRET,
+#            secure=True,
+#        )
+# >>>>>>> dev
+# >>>>>>> dev
+# >>>>>>> dev
         cloudinary.uploader.destroy(photo.public_photo_id)
         try:
             # Видалення пов'язаних рейтингів
@@ -342,6 +410,104 @@ async def del_photo_tag(photo_id: int, name_tag: str, db: AsyncSession):
     await db.execute(stmt)
     await db.commit()
     return {"success message": "Tag successfully deleted"}
+
+
+
+async def change_photo(
+    user: User,
+    photo_id: int,
+    db: AsyncSession,
+    width: int,
+    height: int,
+    crop_mode: str,
+    effect: str,
+) -> Photo:
+
+    if crop_mode in ALLOWED_CROP_MODES:
+        transformation = [
+            {"width": width, "height": height},
+            {"crop": crop_mode},
+            {"effect": effect},
+        ]
+    else:
+        raise HTTPException(status_code=400, detail="This crop mode is not allowed!")
+
+    query = select(Photo).filter(Photo.id == photo_id)
+    result = await db.execute(query)
+    photo = result.scalar_one_or_none()
+
+    if not photo:
+        raise HTTPException(status_code=400, detail=PHOTO_NOT_FOUND)
+
+    # завантажуємо файл на клаудинарі з трансформацією
+    init_cloudinary()
+
+    unique_photo_id = uuid.uuid4()
+    public_photo_id = f"Photos_of_user/{user.username}/{unique_photo_id}"
+    r = cloudinary.uploader.upload(
+        photo.path,
+        public_id=public_photo_id,
+        overwrite=True,
+        transformation=transformation,
+    )
+
+    url = cloudinary.CloudinaryImage(public_photo_id).build_url()
+    photo.path_transform = url
+    QR_code = await get_QR_code(url, unique_photo_id, db)
+
+    try:
+        # db.add(new_photo)
+        await db.commit()
+        await db.refresh(photo)
+    except Exception as e:
+        await db.rollback()
+        raise e
+
+    return {"transformed_url": url, "QR code": QR_code}
+
+
+async def make_avatar_from_photo(
+    user: User,
+    photo_id: int,
+    effect_mode: str,
+    db: AsyncSession,
+) -> Photo:
+
+    query = select(Photo).filter(Photo.id == photo_id)
+    result = await db.execute(query)
+    photo = result.scalar_one_or_none()
+
+    avatar = [
+        {"gravity": "face", "height": 200, "width": 200, "crop": "thumb"},
+        {"radius": "max"},
+        {"effect": effect_mode},
+        {"focus": "auto"},
+        {"b_auto": "predominant_contrast"},
+        {"fetch_format": "auto"},
+    ]
+    if not photo:
+        raise HTTPException(status_code=400, detail=PHOTO_NOT_FOUND)
+
+    init_cloudinary()
+
+    unique_photo_id = uuid.uuid4()
+    public_photo_id = f"Photos_of_user/{user.username}/{unique_photo_id}"
+    r = cloudinary.uploader.upload(
+        photo.path,
+        public_id=public_photo_id,
+        overwrite=True,
+        transformation=avatar,
+    )
+
+    # забрати посилання но нове фото, покласти його у photo.path_transform та зберігти дані у базі
+    # url = cloudinary.CloudinaryImage(photo.public_photo_id).build_url(
+    #     transformation=avatar
+    # )
+    url = cloudinary.CloudinaryImage(public_photo_id).build_url()
+    QR_code = await get_QR_code(url, unique_photo_id, db)
+
+    return {"avatar": url, "QR code": QR_code}
+
   
 
 async def search_photos(search_keyword: str, photos_per_page: int, skip_photos: int,
@@ -462,4 +628,46 @@ async def search_photos_by_filter(search_keyword: str, rate_min: float, rate_max
     photos_by_tags = result.scalars().all()
     # объединяем результаты поиска по ключевому слову и тегу со средним рейтингом в диапазоне и убираем дубликаты из результатов
     photos = photos_key_word + [x for x in photos_by_tags if x not in photos_key_word]
+# <<<<<<< oleksandr
+#    return photos
+# =======
+    if photos == []:
+        raise  HTTPException(status_code=400, detail=f"Photo with keyword={search_keyword} not found")
+    
+#    2-вариант - тоже не рабочий 
+    # stmt = select(Tag).filter_by(name=search_keyword)
+    # result = await db.execute(stmt)
+    # tag = result.scalar_one_or_none()
+    # stmt = select(Photo).where(Photo.description.ilike(f"%{search_keyword}%"))
+    # print(stmt)
+    # if rate_min or rate_max:
+    #     rate_min = rate_min or 0.1
+    #     rate_max = rate_max or 5.0
+    #     print(rate_min, rate_max, Rating.rating)
+    #     stmt = select(Photo).filter(and_(func.avg(Photo.rating) >= rate_min, 
+    #         func.avg(Photo.rating) <= rate_max)).where(Photo.description.ilike(f"%{search_keyword}%"))
+    #     # order_by(Photo.id).offset(skip_photos).limit(photos_per_page) 
+    #     print("+++++++++++++++++")
+ 
+    # result = await db.execute(stmt)
+    # photos_key_word = result.scalars().all()
+    # # Если тега нет, ищем только по Description
+    # if tag is None:
+    #     print("tag is none")
+    #     return photos_key_word
+    # # ищем по Description и по тегу
+    # stmt = select(Photo).where(and_(
+    #                 Tag.name == search_keyword,
+    #                 # mtm
+    #                 Photo.id == photo_m2m_tag.c.photo_id,
+    #                 Tag.id == photo_m2m_tag.c.tag_id,
+    #         )).order_by(Photo.id).offset(skip_photos).limit(photos_per_page)
+    # result = await db.execute(stmt)
+    # photos_by_tags = result.scalars().all()
+    # photos = photos_key_word + [x for x in photos_by_tags if x not in photos_key_word]
+    # if photos == []:
+    #     raise  HTTPException(status_code=400, detail=f"Photo with keyword={search_keyword} not found")
     return photos
+
+
+# >>>>>>> dev

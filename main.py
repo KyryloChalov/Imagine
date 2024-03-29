@@ -26,11 +26,13 @@ from src.conf import messages
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if not config.REDIS_PASSWORD:
+        config.REDIS_PASSWORD = None
+
     r = await redis.Redis(
         host=config.REDIS_DOMAIN,
-        port=config.REDIS_PORT,
-        db=0,
-        # password=config.REDIS_PASSWORD, # з ним в мене зависає. чи треба тут пароль?
+        port=int(config.REDIS_PORT),
+        password=config.REDIS_PASSWORD,  # з ним в мене зависає. чи треба тут пароль? - fix config.REDIS_PASSWORD = None
         encoding="utf-8",
         decode_responses=True,
     )
@@ -52,7 +54,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # @app.middleware("http")
 # async def test(requests: Request, call_next: Callable):
@@ -140,4 +141,4 @@ async def healthchecker(db: AsyncSession = Depends(get_db)):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=8000, reload=True)
+    uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)
