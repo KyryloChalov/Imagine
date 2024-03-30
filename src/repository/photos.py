@@ -35,6 +35,18 @@ def init_cloudinary():
 
 async def get_or_create_tag(tag_name: str, db: AsyncSession) -> Tag:
 
+    """
+    The get_or_create_tag function takes a tag name and an async database session.
+    It then checks if the tag exists in the database, and returns it if so.
+    If not, it creates a new Tag object with that name, adds it to the session, commits 
+    the changes to the database (which generates its primary key), refreshes that object from 
+    the database (to get its primary key) and returns it.
+    
+    :param tag_name: str: Specify the name of the tag that we want to create or get
+    :param db: AsyncSession: Pass in the database session to the function
+    :return: A tag object
+    :doc-author: Trelent
+    """
     existing_tag = await db.execute(select(Tag).filter(Tag.name == tag_name))
     tag = existing_tag.scalar_one_or_none()
 
@@ -66,6 +78,16 @@ async def assembling_tags(source_tags: list[str], db: AsyncSession) -> List[Tag]
 
 
 async def get_QR_code(path: str, unique_photo_id: uuid, db: AsyncSession) -> str:
+    """
+    The get_QR_code function takes in a path and unique_photo_id,
+        creates a QR code from the path, uploads it to cloudinary with the unique photo id as its name.
+        It returns the secure url of that image.
+    
+    :param path: str: Pass in the path to the image that is being uploaded
+    :param unique_photo_id: uuid: Make sure that the qr code is unique and not used by another photo
+    :param db: AsyncSession: Create a database session
+    :return: A string, but you're trying to assign it to a photo object
+    """
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -144,7 +166,7 @@ async def create_photo(
 
 async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
     """
-    The add_tag_to_photo function adds a tag to the photo.
+    The add_tag_to_photo function adds a tag to the photo with max numbers tags = 5.
         Args:
             photo_id (int): The id of the photo.
             name_tag (str): The name of the tag.
@@ -155,7 +177,6 @@ async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
     :param name_tag: str: Specify the name of the tag to be added
     :param db: AsyncSession: Pass the database session to the function
     :return: A dictionary
-    :doc-author: Trelent
     """
     stmt = select(Photo).filter_by(id=photo_id)
     result = await db.execute(stmt)
@@ -219,6 +240,16 @@ async def edit_photo_description(
     user: User, photo_id: int, description: str, db: AsyncSession
 ) -> dict:
 
+    """
+    The edit_photo_description function allows a user to edit the description of an existing photo.
+    
+    :param user: User: Identify the user who is making the request
+    :param photo_id: int: Identify the photo to be edited
+    :param description: str: Pass the description of the photo to be edited
+    :param db: AsyncSession: Pass the database connection to the function
+    :return: A photo object
+    :doc-author: Trelent
+    """
     query_result = await db.execute(
         select(Photo).where(Photo.user_id == user.id).where(Photo.id == photo_id)
     )
@@ -423,6 +454,22 @@ async def change_photo(
     effect: str,
 ) -> Photo:
 
+    """
+    The change_photo function takes a photo_id, width, height, crop_mode and effect as input.
+    It then checks if the crop mode is allowed. If it is not allowed an error message will be returned to the user.
+    If it is allowed then the transformation of the image will take place on cloudinary and a new url for that transformed image 
+    will be returned along with its QR code.
+    
+    :param user: User: Get the username of the user
+    :param photo_id: int: Identify the photo in the database
+    :param db: AsyncSession: Pass the database session to the function
+    :param width: int: Set the width of the photo
+    :param height: int: Set the height of the photo
+    :param crop_mode: str: Specify the crop mode that will be used to transform the photo
+    :param effect: str: Apply a filter to the image
+    :return: A dictionary with two keys: transformed_url and qr code
+    :doc-author: Trelent
+    """
     if crop_mode in ALLOWED_CROP_MODES:
         transformation = [
             {"width": width, "height": height},
@@ -473,6 +520,18 @@ async def make_avatar_from_photo(
     db: AsyncSession,
 ) -> Photo:
 
+    """
+    The make_avatar_from_photo function takes a photo_id, effect_mode and user as input.
+    It then queries the database for the photo with that id. If it exists, it uploads
+    the image to cloudinary using the given effect mode and returns a url to that image.
+    
+    :param user: User: Get the username of the user
+    :param photo_id: int: Identify the photo that will be used to create an avatar
+    :param effect_mode: str: Apply a filter to the photo
+    :param db: AsyncSession: Pass a database session to the function
+    :return: A dictionary with two keys: avatar and qr code
+    :doc-author: Trelent
+    """
     query = select(Photo).filter(Photo.id == photo_id)
     result = await db.execute(query)
     photo = result.scalar_one_or_none()
@@ -628,46 +687,6 @@ async def search_photos_by_filter(search_keyword: str, rate_min: float, rate_max
     photos_by_tags = result.scalars().all()
     # объединяем результаты поиска по ключевому слову и тегу со средним рейтингом в диапазоне и убираем дубликаты из результатов
     photos = photos_key_word + [x for x in photos_by_tags if x not in photos_key_word]
-# <<<<<<< oleksandr
-#    return photos
-# =======
     if photos == []:
         raise  HTTPException(status_code=400, detail=f"Photo with keyword={search_keyword} not found")
-    
-#    2-вариант - тоже не рабочий 
-    # stmt = select(Tag).filter_by(name=search_keyword)
-    # result = await db.execute(stmt)
-    # tag = result.scalar_one_or_none()
-    # stmt = select(Photo).where(Photo.description.ilike(f"%{search_keyword}%"))
-    # print(stmt)
-    # if rate_min or rate_max:
-    #     rate_min = rate_min or 0.1
-    #     rate_max = rate_max or 5.0
-    #     print(rate_min, rate_max, Rating.rating)
-    #     stmt = select(Photo).filter(and_(func.avg(Photo.rating) >= rate_min, 
-    #         func.avg(Photo.rating) <= rate_max)).where(Photo.description.ilike(f"%{search_keyword}%"))
-    #     # order_by(Photo.id).offset(skip_photos).limit(photos_per_page) 
-    #     print("+++++++++++++++++")
- 
-    # result = await db.execute(stmt)
-    # photos_key_word = result.scalars().all()
-    # # Если тега нет, ищем только по Description
-    # if tag is None:
-    #     print("tag is none")
-    #     return photos_key_word
-    # # ищем по Description и по тегу
-    # stmt = select(Photo).where(and_(
-    #                 Tag.name == search_keyword,
-    #                 # mtm
-    #                 Photo.id == photo_m2m_tag.c.photo_id,
-    #                 Tag.id == photo_m2m_tag.c.tag_id,
-    #         )).order_by(Photo.id).offset(skip_photos).limit(photos_per_page)
-    # result = await db.execute(stmt)
-    # photos_by_tags = result.scalars().all()
-    # photos = photos_key_word + [x for x in photos_by_tags if x not in photos_key_word]
-    # if photos == []:
-    #     raise  HTTPException(status_code=400, detail=f"Photo with keyword={search_keyword} not found")
     return photos
-
-
-# >>>>>>> dev
