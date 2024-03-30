@@ -87,7 +87,7 @@ static_directory = BASE_DIR.joinpath("templates").joinpath("css")
 app.mount("/css", StaticFiles(directory=static_directory), name="css")
 
 image_directory = BASE_DIR.joinpath("templates").joinpath("image")
-app.mount("/image", StaticFiles(directory=image_directory), name="image")
+app.mount("/img", StaticFiles(directory=image_directory), name="image")
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="static")
 
@@ -106,12 +106,12 @@ async def read_root(request: Request):
     """
     return templates.TemplateResponse(
         name="index.html",
-        context={
-            "request": request,
-            "welcome": f"Welcome!",
-            "message": f"This is Imagine from _magic",
-            "about_app": "REST API",
-        },
+        # context={
+        #     "request": request,
+        #     "welcome": f"Welcome!",
+        #     "message": f"This is Imagine from _magic",
+        #     "about_app": "REST API",
+        # },
     )
 
 
