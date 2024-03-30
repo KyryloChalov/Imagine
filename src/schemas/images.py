@@ -1,9 +1,21 @@
-'''скопіював з contacts'''
+"""скопіював з contacts"""
+
 import re
-from typing import Optional
+import uuid
+from typing import Optional, List
 from datetime import datetime, date
 
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, validator
+
+
+class RatingSchema(BaseModel):
+    rating: int = Field(ge=1, le=5)
+
+    @validator("rating")
+    def rating_number(cls, rating_num):
+        if (rating_num < 1) or (rating_num > 5):
+            raise ValueError("Rating must be between 1 and 5")
+        return rating_num
 
 
 class ContactSchema(BaseModel):
@@ -11,7 +23,7 @@ class ContactSchema(BaseModel):
     surname: str = Field(max_length=30)
     email: EmailStr = Field(max_length=80)
     birthday: Optional[date] = Field(None)
-    phone:  Optional[str] = Field(max_length=20)
+    phone: Optional[str] = Field(max_length=20)
     info: Optional[str] = Field(max_length=200, default=None)
 
     @validator("phone")
@@ -26,6 +38,7 @@ class ContactSchema(BaseModel):
 class ContactUpdateSchema(ContactSchema):
     created_at: datetime = Field(default=datetime.now())
 
+
 class ContactResponse(BaseModel):
     id: int = 1
     name: str
@@ -34,8 +47,15 @@ class ContactResponse(BaseModel):
     birthday: date
     phone: str
     info: str | None
-    
-    model_config = ConfigDict(from_attributes = True)  # noqa
 
-    # class Config:
-    #     from_attributes = True
+    model_config = ConfigDict(from_attributes=True)  # noqa
+
+
+class ImagesSchema(BaseModel):
+    id: int = 1
+    path: str
+    description: str
+    created_at: Optional[date]
+    path_transform: str
+    user_id: uuid.UUID
+    updated_at: Optional[date] = Field(None)
