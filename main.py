@@ -96,7 +96,6 @@ app.include_router(users.router, prefix="/api")
 app.include_router(photos.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
 app.include_router(ratings.router, prefix="/api")
-app.include_router(seed.router, prefix="")
 
 
 @app.get("/")
@@ -106,12 +105,12 @@ async def read_root(request: Request):
     """
     return templates.TemplateResponse(
         name="index.html",
-        # context={
-        #     "request": request,
-        #     "welcome": f"Welcome!",
-        #     "message": f"This is Imagine from _magic",
-        #     "about_app": "REST API",
-        # },
+        context={
+            "request": request,
+            "welcome": f"Welcome!",
+            "message": f"This is Imagine from _magic",
+            "about_app": "REST API",
+        },
     )
 
 
@@ -139,6 +138,8 @@ async def healthchecker(db: AsyncSession = Depends(get_db)):
         print(e)
         raise HTTPException(status_code=500, detail="Error connecting to the database")
 
+
+app.include_router(seed.router, prefix="")
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)
