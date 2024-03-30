@@ -146,6 +146,14 @@ async def delete_comment(comment_id: int,
 async def get_photo_by_id(photo_id: int,
                           db: AsyncSession = Depends(get_db),
                           ):
+    """
+    The get_photo_by_id function returns a photo by its id.
+    
+    :param photo_id: int: Specify the id of the photo to be returned
+    :param db: AsyncSession: Get a database connection from the pool
+    :return: A photo object
+    :doc-author: Trelent
+    """
     stmt = select(Photo).filter_by(id=photo_id)
     result = await db.execute(stmt)
     return result.scalar_one_or_none()

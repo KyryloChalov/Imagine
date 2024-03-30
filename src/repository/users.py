@@ -163,6 +163,20 @@ async def update_user(user_id: uuid.UUID, body: UserUpdateSchema, db: AsyncSessi
         return user
     
 async def change_user_role(user_id: uuid.UUID, body: UserUpdateSchema, db: AsyncSession, current_user: User):
+    """
+    The change_user_role function changes the role of a user.
+        Args:
+            user_id (uuid): The id of the user to change.
+            body (UserUpdateSchema): A schema containing information about what to change in the database.
+            db (AsyncSession): An async session for interacting with our database.
+            current_user(User): The currently logged in User object, used for checking permissions and roles.
+    
+    :param user_id: uuid.UUID: Get the user from the database
+    :param body: UserUpdateSchema: Validate the request body
+    :param db: AsyncSession: Pass the database session to the function
+    :param current_user: User: Check if the user is an admin or not
+    :return: A user object with the updated role
+    """
     stmt = select(User).filter_by(id=user_id)
     user = await db.execute(stmt)
     user = user.scalar_one_or_none()

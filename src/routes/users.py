@@ -37,21 +37,19 @@ async def get_all_users(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(auth_service.get_current_user),
 ):
+   
     """
     The get_all_users function returns a list of all users in the database.
-        ---
-        get:
-            summary: Get all users from the database.  This is an admin or moderator-only function, and will return a 403 error if called by non-admin user.
-            description: Returns a list of all users in the database, with optional limit and offset parameters to control pagination (defaults are 10 records per page).  This is an admin-only function, and will return a 403 error if called by non-admin user.
-
+        The limit and offset parameters are used to paginate the results.
+        
+    
     :param limit: int: Limit the number of users returned
     :param ge: Set a minimum value for the limit parameter
-    :param le: Limit the number of users that can be returned in a single request
-    :param offset: int: Offset the number of users returned by the limit: int parameter
-    :param ge: Specify a minimum value for the parameter
-    :param db: AsyncSession: Get the database session
+    :param le: Set the maximum value of the limit parameter
+    :param offset: int: Specify the number of records to skip
+    :param db: AsyncSession: Pass the database connection to the function
     :param user: User: Get the current user
-    :return: A list of users, and the get_all_users function is decorated with @router
+    :return: A list of users
     :doc-author: Trelent
     """
     users = await repositories_users.get_all_users(limit, offset, db)
@@ -63,21 +61,21 @@ async def get_all_users(
 async def update_user(body: UserUpdateSchema, id: uuid.UUID = Path(), db: AsyncSession = Depends(get_db),
                     user: User = Depends(auth_service.get_current_user)):
     """
-    The update_user function updates a user in the database. Can do it only current User or Admin
+    The update_user function updates a user in the database.
         Args:
-            body (UserUpdateSchema): The updated user information.
+            body (UserUpdateSchema): The updated user object.
             id (uuid.UUID): The unique identifier of the user to update.
             db (AsyncSession): An async session for interacting with the database.
-                Defaults to Depends(get_db).
         Returns:
             User: A User object representing an updated version of the original 
     
-    :param body: UserUpdateSchema: Validate the data that is passed to the function
-    :param id: uuid.UUID: Get the user id from the url
-    :param db: AsyncSession: Pass the database connection to the repository
-    :param user: User: Get the current user
-    :return: An updated user object
     
+    :param body: UserUpdateSchema: Validate the request body
+    :param id: uuid.UUID: Get the id of the user to be deleted
+    :param db: AsyncSession: Get the database connection,
+    :param user: User: Get the current user from the cache
+    :return: The user object
+    :doc-author: Trelent
     """
     email = user.email
     if user.id != id and user.role != Role.admin:
@@ -126,8 +124,23 @@ async def delete_user(id: uuid.UUID = Path(),
     dependencies=[Depends(RateLimiter(times=1, seconds=20)), Depends(access_to_route_all)])
 async def change_user_role(body: UserChangeRole, user_id: uuid.UUID = Path(), db: AsyncSession = Depends(get_db), 
                            user: User = Depends(auth_service.get_current_user)):
-    print(body.role)
-    print(Role.moderator)
+    
+    """
+    The change_user_role function changes the role of a user.
+        The function takes in a UserChangeRole object, which contains the new role for the user.
+        It also takes in an optional path parameter, which is used to identify the user whose role will be changed. 
+        If no path parameter is provided, then it defaults to None and raises an HTTPException with status code 404 (Not Found). 
+        
+            Args:
+                body (UserChangeRole): A UserChangeRole object containing information about what new role should be assigned to a given user.  
+    
+    :param body: UserChangeRole: Get the role from the request body
+    :param user_id: uuid.UUID: Get the user id from the url
+    :param db: AsyncSession: Get the database connection
+    :param user: User: Check if the user making the request is an admin
+    :return: A user object
+    :doc-author: Trelent
+    """
     if body.role == Role.user or body.role == Role.moderator:
         user = await repositories_users.change_user_role(user_id, body, db, user)
         if user is None:
@@ -165,6 +178,19 @@ async def get_username_info(
     user: User = Depends(auth_service.get_current_user),
 ):
 
+    """
+    The get_username_info function returns the user's information and number of photos.
+        Args:
+            username (str): The username of the user whose info is being requested.
+            db (AsyncSession): An async session for interacting with a database. Defaults to Depends(get_db).
+            user (User): A User object representing the current logged in user, defaults to Depends(auth_service.get_current_user)
+    
+    :param username: str: Get the username from the url path
+    :param db: AsyncSession: Pass the database session to the repository function
+    :param user: User: Get the current user
+    :return: A user object
+    :doc-author: Trelent
+    """
     user, num_photos = await repositories_users.get_info_by_username(username, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.USER_NOT_FOUND)
