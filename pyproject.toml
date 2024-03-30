@@ -55,5 +55,5 @@ build-backend = "poetry.core.masonry.api"
 addopts = "--doctest-modules"
 testpaths = [
     "tests", ]
-pythonpath = "."
+pythonpath = [".", "src"]
 filterwarnings = "ignore::DeprecationWarning"
