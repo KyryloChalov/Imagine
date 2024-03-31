@@ -12,6 +12,7 @@ commands = [
 ]
 
 
+
 def run_command(command):
     print("Running command: {}".format(command))
     os.system(command)
