@@ -86,8 +86,8 @@ templates = Jinja2Templates(directory=BASE_DIR / "templates")
 static_directory = BASE_DIR.joinpath("templates").joinpath("css")
 app.mount("/css", StaticFiles(directory=static_directory), name="css")
 
-image_directory = BASE_DIR.joinpath("templates").joinpath("image")
-app.mount("/image", StaticFiles(directory=image_directory), name="image")
+image_directory = BASE_DIR.joinpath("templates").joinpath("img")
+app.mount("/img", StaticFiles(directory=image_directory), name="image")
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="static")
 
