@@ -6,7 +6,6 @@ This project is a REST API backend for an image sharing platform. It provides va
 user authentication, managing user profiles, uploading and managing photos, adding comments and ratings to photos, as
 well as a health checker endpoint to ensure the database's functionality.
 
-Sure, here's the updated `readme.md` for your project:
 
 ## Main Features
 
