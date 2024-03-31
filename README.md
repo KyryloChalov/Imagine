@@ -241,10 +241,10 @@ The ImageApp is also deployed to the web and accessible through links below
 We're a passionate group of developers dedicated to building a powerful and user-friendly photo application. Here's how
 you can connect with each team member:
 
-* **Kyrylo Chalov** ([https://github.com/KyryloChalov](https://github.com/KyryloChalov))
-* **Oleksandr** ([https://github.com/1Oleksandr](https://github.com/1Oleksandr))
-* **Jurij Procenko** ([https://github.com/jsenko](https://github.com/jsenko))
-* **UreshiiSushi** ([https://github.com/UreshiiSushi](https://github.com/UreshiiSushi))
-* **Oleksiy M** ([https://github.com/OleksiyM](https://github.com/OleksiyM))
+* **Kyrylo Chalov** ([github.com/KyryloChalov](https://github.com/KyryloChalov))
+* **Oleksandr** ([github.com/1Oleksandr](https://github.com/1Oleksandr))
+* **Jurij Procenko** ([github.com/urijProcenko](https://github.com/urijProcenko))
+* **UreshiiSushi** ([github.com/UreshiiSushi](https://github.com/UreshiiSushi))
+* **Oleksiy M** ([github.com/OleksiyM](https://github.com/OleksiyM))
 
 **Feel free to check out their profiles to learn more about their contributions to the project!**
