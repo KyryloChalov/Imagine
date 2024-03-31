@@ -27,8 +27,8 @@ engine = create_async_engine(TEST_SQLALCHEMY_DATABASE_URL, poolclass=NullPool)
 
 TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine)
 
-test_user = {"username": "Bill", "email": "gates@microsoft.com", "password": "33344455"}
-user_data = {"username": "Steve", "email": "jobs@gmail.com", "password": "66677788"}
+test_user = {"name": "Bill","username": "Bill", "email": "gates@microsoft.com", "password": "33344455"}
+user_data = {"name": "Steve","username": "Steve", "email": "jobs@gmail.com", "password": "66677788"}
     
 @pytest.fixture(scope="module", autouse=True)
 def init_models_wrap():
