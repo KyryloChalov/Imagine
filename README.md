@@ -243,7 +243,7 @@ you can connect with each team member:
 
 * **Kyrylo Chalov** ([github.com/KyryloChalov](https://github.com/KyryloChalov))
 * **Oleksandr** ([github.com/1Oleksandr](https://github.com/1Oleksandr))
-* **Jurij Procenko** ([github.com/urijProcenko](https://github.com/urijProcenko))
+* **Jurij Procenko** ([github.com/JurijProcenko](https://github.com/JurijProcenko))
 * **UreshiiSushi** ([github.com/UreshiiSushi](https://github.com/UreshiiSushi))
 * **Oleksiy M** ([github.com/OleksiyM](https://github.com/OleksiyM))
 
