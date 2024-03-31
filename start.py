@@ -4,7 +4,7 @@ import os
 commands = [
     # "poetry shell",
     "poetry update package",
-    "docker pull postgres",
+    # "docker pull postgres",
     "docker-compose up -d",
     "alembic",
     "alembic upgrade head",

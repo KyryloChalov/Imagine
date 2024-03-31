@@ -47,7 +47,7 @@ body {
     margin-bottom: 60px;
 }
 
-.goose-main-text {
+.imagine-main-text {
     color: #1b1d1f;
     font-size: 64px;
     font-weight: 600;
@@ -107,7 +107,7 @@ body {
 .gus-facts-descr {
   color: #1b1d1f;
   text-align: center;
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 400;
   line-height: 24px;
   width: 772px;
@@ -162,7 +162,49 @@ body {
   margin-left: 96;
 }
 
+.readme-page {
+  /* background: linear-gradient(90deg, #fcfefe 0%, #a5deff 100%); */
+  /* width: 1360px; */
+  height: 699px;
+  flex-shrink: 0;
+  padding-top: 80px;
+  padding-bottom: 80px;
+  margin-left: 96;
+}
+
+
+
 .form {
+  border-radius: 40px;
+  background: #fff;
+  /* width: 573px; */
+  /* height: 580px; */
+  flex-shrink: 0;
+  padding-top: 32px;
+  padding-left: 60px;
+  padding-right: 60px;
+  padding-bottom: 60px;
+  box-sizing: border-box;
+  margin: auto;
+  text-align: center;
+}
+
+.readme {
+  border-radius: 40px;
+  background: #fff;
+  /* width: 573px; */
+  /* height: 580px; */
+  flex-shrink: 0;
+  padding-top: 32px;
+  padding-left: 60px;
+  padding-right: 60px;
+  padding-bottom: 60px;
+  box-sizing: border-box;
+  margin: auto;
+  text-align: center;
+}
+
+.form-2 {
   border-radius: 40px;
   background: #fff;
   /* width: 573px; */
@@ -225,7 +267,7 @@ body {
 
 .form-btn {
   border-radius: 8px;
-  background: #ff6b0a;
+  background: #009485;
   border: none;
   padding-top: 12px;
   padding-bottom: 12px;
