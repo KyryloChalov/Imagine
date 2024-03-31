@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from src.models.models import User
 from src.conf import messages
-from tests.conftest import TestingSessionLocal, user_data
+from conftest import TestingSessionLocal, user_data
 
    
 def test_signup(client, monkeypatch):
