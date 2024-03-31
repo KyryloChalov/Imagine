@@ -4,12 +4,13 @@ import os
 commands = [
     # "poetry shell",
     "poetry update package",
-    "docker pull postgres",
+    # "docker pull postgres",
     "docker-compose up -d",
     "alembic",
     "alembic upgrade head",
     "uvicorn main:app --host localhost --port 8000 --reload",
 ]
+
 
 
 def run_command(command):

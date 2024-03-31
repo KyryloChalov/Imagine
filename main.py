@@ -87,7 +87,7 @@ static_directory = BASE_DIR.joinpath("templates").joinpath("css")
 app.mount("/css", StaticFiles(directory=static_directory), name="css")
 
 image_directory = BASE_DIR.joinpath("templates").joinpath("image")
-app.mount("/img", StaticFiles(directory=image_directory), name="image")
+app.mount("/image", StaticFiles(directory=image_directory), name="image")
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="static")
 
@@ -96,6 +96,7 @@ app.include_router(users.router, prefix="/api")
 app.include_router(photos.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
 app.include_router(ratings.router, prefix="/api")
+app.include_router(seed.router, prefix="")
 
 
 @app.get("/")
@@ -138,8 +139,6 @@ async def healthchecker(db: AsyncSession = Depends(get_db)):
         print(e)
         raise HTTPException(status_code=500, detail="Error connecting to the database")
 
-
-app.include_router(seed.router, prefix="")
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)
