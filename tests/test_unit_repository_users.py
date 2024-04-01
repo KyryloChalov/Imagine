@@ -123,15 +123,15 @@ class TestContacts(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.username, body.username)
         self.assertEqual(result.email, body.email)
 
-    # async def test_delete_user(self):
-    #     contact = [User(id="c919f556-5faf-4293-bea1-a37f8d3bab36", username='bill', email='bill@test.com', role = "user")]
-    #     mocked_contact = MagicMock()
-    #     mocked_contact.scalar_one_or_none.return_value = contact
-    #     self.session.execute.return_value = mocked_contact
-    #     result = await delete_user(user_id="c919f556-5faf-4293-bea1-a37f8d3bab36", db = self.session, current_user=self.user)
-    #     self.session.delete.assert_called_once()
-    #     self.session.commit.assert_called_once()
-    #     self.assertEqual(result, contact)
+    async def test_delete_user(self):
+        contact = User(id="c919f556-5faf-4293-bea1-a37f8d3bab36", username='bill', email='bill@test.com', role = "user")
+        mocked_contact = MagicMock()
+        mocked_contact.scalar_one_or_none.return_value = contact
+        self.session.execute.return_value = mocked_contact
+        result = await delete_user(user_id="c919f556-5faf-4293-bea1-a37f8d3bab36", db = self.session, current_user=contact)
+        self.session.delete.assert_called_once()
+        self.session.commit.assert_called_once()
+        self.assertEqual(result, contact)
 
     async def test_change_user_role(self):
         body = UserChangeRole(role="moderator", banned=False, updated_at=datetime.now())
