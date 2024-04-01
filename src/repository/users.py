@@ -8,7 +8,7 @@ from libgravatar import Gravatar
 from src.conf import messages
 from src.database.db import get_db
 from src.models.models import Role, User, Photo
-from src.schemas.user import UserSchema, UserUpdateSchema
+from src.schemas.user import UserChangeRole, UserSchema, UserUpdateSchema
 
 
 async def get_user_by_email(email: str, db: AsyncSession = Depends(get_db)):
@@ -162,12 +162,12 @@ async def update_user(user_id: uuid.UUID, body: UserUpdateSchema, db: AsyncSessi
         print(messages.USER_NOT_HAVE_PERMISSIONS)
         return user
     
-async def change_user_role(user_id: uuid.UUID, body: UserUpdateSchema, db: AsyncSession, current_user: User):
+async def change_user_role(user_id: uuid.UUID, body: UserChangeRole, db: AsyncSession, current_user: User):
     """
     The change_user_role function changes the role of a user.
         Args:
             user_id (uuid): The id of the user to change.
-            body (UserUpdateSchema): A schema containing information about what to change in the database.
+            body (UserChangeRole): A schema containing information about what to change in the database.
             db (AsyncSession): An async session for interacting with our database.
             current_user(User): The currently logged in User object, used for checking permissions and roles.
     
@@ -185,6 +185,8 @@ async def change_user_role(user_id: uuid.UUID, body: UserUpdateSchema, db: Async
             user.role = body.role
             user.banned = body.banned
             user.updated_at = func.now()
+            if body.banned:
+                user.banned_at = func.now()
             await db.commit()
             await db.refresh(user)
             return user

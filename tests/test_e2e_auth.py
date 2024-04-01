@@ -164,15 +164,15 @@ def test_reset_password(client, get_email_token):
 def test_reset_password_not_valid(client, get_email_token):
     token = get_email_token
     response = client.post(f"api/auth/form_reset_password/{token}", 
-                           json={"password1": "newpassword", "password2": "newpassword"})
+                           json={"password1": "pass", "password2": "pass"})
     assert response.status_code == 422, response.text
     assert (
         response.json()["detail"][0]["msg"]
-        == "String should have at most 8 characters"
+        == "String should have at least 5 characters"
     )
     assert (
         response.json()["detail"][0]["type"]
-        == "string_too_long"
+        == "string_too_short"
     )
     
 def test_reset_password_not_the_same(client, get_email_token):
@@ -183,7 +183,3 @@ def test_reset_password_not_the_same(client, get_email_token):
     data = response.json()
     assert data["detail"] == messages.DIFFERENT_PASSWORD
     
-    
-
-        
-        
