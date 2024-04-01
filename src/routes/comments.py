@@ -23,7 +23,7 @@ from src.conf.config import config
 from src.conf import messages
 from src.repository import comments as repositories_comments
 
-router = APIRouter(prefix="/comments", tags=["comments"])
+router = APIRouter(prefix="/photos", tags=["comments"])
 
 # Access to the operations by roles
 access_get = RoleAccess([Role.admin, Role.moderator, Role.user])
@@ -33,7 +33,7 @@ access_delete = RoleAccess([Role.admin, Role.moderator])
 
 
 @router.post(
-    "/{photo_id}",
+    "/{photo_id}/comments",
     response_model=CommentResposeSchema,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(access_create)],
@@ -62,7 +62,7 @@ async def create_comment(photo_id: int,
 
 
 @router.get(
-    "/{photo_id}",
+    "/{photo_id}/comments",
     response_model=List[CommentResposeSchema],
     dependencies=[Depends(access_get)],
 )
@@ -87,7 +87,7 @@ async def get_all_comments(limit: int = Query(10, ge=10, le=100),
 
 
 @router.get(
-    "/user/{photo_id}",
+    "/{photo_id}/user/comments",
     response_model=list[CommentResposeSchema],
     dependencies=[Depends(access_get)]
 )
@@ -120,7 +120,7 @@ async def get_user_comments(
 
 # @router.put(
 @router.patch(
-    "/{comment_id}",
+    "/comments/{comment_id}",
     response_model=CommentUpdateSchema,
     dependencies=[Depends(access_update)],
 )
@@ -148,7 +148,7 @@ async def update_comment(comment_id: int = Path(ge=1),
 
 
 @router.delete(
-    "/{comment_id}",
+    "/comments/{comment_id}",
     # status_code=status.HTTP_204_NO_CONTENT,
     response_model=CommentResposeSchema,
     dependencies=[Depends(access_delete)],
