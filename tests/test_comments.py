@@ -4,11 +4,13 @@ import pytest
 
 from unittest.mock import patch, MagicMock
 from src.schemas.comments import CommentSchema, CommentUpdateSchema
+from src.schemas.photos import PhotosSchema, PhotosResponse
 from src.repository.comments import create_comment, get_comment, get_user_comments_for_photo, get_all_comment_for_photo, \
-    edit_comment, delete_comment
+    edit_comment, delete_comment, get_photo_by_id
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+@pytest.mark.asyncio
 class TestAsyncComment(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.comment = CommentSchema(opinion="Test comment")
@@ -92,6 +94,15 @@ class TestAsyncComment(unittest.IsolatedAsyncioTestCase):
         result = await get_user_comments_for_photo(self.photo_id, self.user_id, self.session)
         self.assertEquals(result, comments)
 
+    async def test_edit_non_existing_comment(self):
+        body = CommentUpdateSchema(opinion="Test comment")
+        mocked_comment = MagicMock()
+        mocked_comment.scalars_or_none.return_value = None
+        self.session.execute.return_value = mocked_comment
+        self.session.execute.return_value.scalar_one_or_none.return_value = None
+        result = await edit_comment(100, body, self.session)
+        self.assertIsNone(result)
+
 
 @pytest.mark.asyncio
 async def test_create_comment():
@@ -107,3 +118,13 @@ async def test_create_comment():
         session.add.assert_called_once_with(mock_comment.return_value)
         session.commit.assert_called_once()
         session.refresh.assert_called_once_with(mock_comment.return_value)
+
+
+@pytest.mark.asyncio
+async def test_get_photo_by_id():
+    # expected_photo = PhotosSchema(id=1, path="Test photo", description="Test description")
+    mocked_photo = MagicMock()
+    # mocked_photo.scalar_one_or_none.return_value = expected_photo
+    # session.execute.return_value = mocked_photo
+    # result = await get_comment(self.id, self.session)
+    # assertEqual(result, expected_photo)
