@@ -71,7 +71,7 @@ async def get_all_photos(
     description="No more than 1 request per 20 second",
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
-async def put_photo(
+async def post_photo(
     photo_description: str | None = Form(
         None, description="Add a description to your photo (string)"
     ),
@@ -83,7 +83,7 @@ async def put_photo(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    The put_photo function is used to add a photo.
+    The post_photo function is used to add a photo.
         201 or error
 
     :param photo_description: str | None: Describe the photo
@@ -149,6 +149,7 @@ async def get_photo(
 
 @router.delete(
     "/{photo_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))],
 )
 async def del_photo(
@@ -175,7 +176,7 @@ async def del_photo(
             status_code=status.HTTP_404_NOT_FOUND, detail=NO_PHOTO_BY_ID
         )
 
-    return {"message": PHOTO_SUCCESSFULLY_DELETED}
+    return
 
 
 @router.patch(
