@@ -239,7 +239,7 @@ def test_reset_password_not_the_same(client, get_email_token):
     assert data["detail"] == messages.DIFFERENT_PASSWORD
 
 
-# # Oleksandr прибрав це. чекаємо відповіді, чому
+# Oleksandr прибрав це. чекаємо відповіді, чому
 # def test_logout(client):
 #     response = client.post("api/auth/logout")
 #     assert response.status_code == 200, response.text
