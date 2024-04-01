@@ -89,7 +89,7 @@ app.mount("/css", StaticFiles(directory=static_directory), name="css")
 image_directory = BASE_DIR.joinpath("templates").joinpath("img")
 app.mount("/img", StaticFiles(directory=image_directory), name="image")
 
-app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="static")
+# app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="static")
 
 app.include_router(auth.auth_router, prefix="/api")
 app.include_router(users.router, prefix="/api")
