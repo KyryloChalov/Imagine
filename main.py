@@ -89,8 +89,12 @@ app.mount("/css", StaticFiles(directory=static_directory), name="css")
 static_directory = BASE_DIR.joinpath("templates").joinpath("js")
 app.mount("/js", StaticFiles(directory=static_directory), name="js")
 
+# static_directory = BASE_DIR.joinpath("docs")
+# app.mount("/docs", StaticFiles(directory=static_directory), name="docs")
+
 image_directory = BASE_DIR.joinpath("templates").joinpath("img")
 app.mount("/img", StaticFiles(directory=image_directory), name="image")
+
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="static")
 

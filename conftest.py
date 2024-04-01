@@ -4,7 +4,7 @@ import asyncio
 import pytest
 import pytest_asyncio
 
-os.environ['TESTING'] = 'True'
+os.environ["TESTING"] = "True"
 
 from alembic import command
 from alembic.config import Config
@@ -20,15 +20,27 @@ from src.database.db import get_db, DatabaseSessionManager
 from src.services.auth import auth_service
 from src.conf.config import config
 
-TEST_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
-# TEST_SQLALCHEMY_DATABASE_URL = config.DB_URL
+# TEST_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+TEST_SQLALCHEMY_DATABASE_URL = config.TEST_DB_URL
 
 engine = create_async_engine(TEST_SQLALCHEMY_DATABASE_URL, poolclass=NullPool)
 
-TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine)
+TestingSessionLocal = async_sessionmaker(
+    autocommit=False, autoflush=False, expire_on_commit=False, bind=engine
+)
 
-test_user = {"name": "Bill", "username": "Bill", "email": "gates@microsoft.com", "password": "33344455"}
-user_data = {"name": "Steve", "username": "Steve", "email": "jobs@gmail.com", "password": "66677788"}
+test_user = {
+    "name": "Bill",
+    "username": "Bill",
+    "email": "gates@microsoft.com",
+    "password": "33344455",
+}
+user_data = {
+    "name": "Stevev",
+    "username": "Steve",
+    "email": "jobs@gmail.com",
+    "password": "66677788",
+}
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -39,8 +51,13 @@ def init_models_wrap():
             await conn.run_sync(Base.metadata.create_all)
         async with TestingSessionLocal() as session:
             hash_password = auth_service.get_password_hash(test_user["password"])
-            current_user = User(username=test_user["username"], email=test_user["email"], password=hash_password,
-                                confirmed=True, role="admin")
+            current_user = User(
+                username=test_user["username"],
+                email=test_user["email"],
+                password=hash_password,
+                confirmed=True,
+                role="admin",
+            )
             session.add(current_user)
             await session.commit()
 
