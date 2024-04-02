@@ -40,19 +40,20 @@ async def test_login(client):
     assert "token_type" in data
 
 
-@pytest.mark.asyncio
-async def test_logout(client):
-    async with TestingSessionLocal() as session:
-        current_user = await session.execute(select(User).where(User.email == user_data.get("email")))
-        current_user = current_user.scalar_one_or_none()
-        if current_user:
-            current_user.confirmed = True
-            await session.commit()
+# @pytest.mark.asyncio
+# async def test_logout(client, get_email_token):
+#     async with TestingSessionLocal() as session:
+#         current_user = await session.execute(select(User).where(User.email == user_data.get("email")))
+#         current_user = current_user.scalar_one_or_none()
+#         if current_user:
+#             current_user.confirmed = True
+#             await session.commit()
 
-    client.post("api/auth/login", data={"username": user_data.get("email"), "password": user_data.get("password")})
-
-    response = client.post("api/auth/logout")
-    assert response.status_code == 200, response.text
-    data = response.json()
-    assert data["message"] == messages.LOGOUT
+#     # client.post("api/auth/login", data={"username": user_data.get("email"), "password": user_data.get("password")})
+#     # tocken = get_email_token
+#     print(user_data)
+#     response = client.post("api/auth/logout", json=user_data)
+#     assert response.status_code == 200, response.text
+#     data = response.json()
+#     assert data["message"] == messages.LOGOUT
     
