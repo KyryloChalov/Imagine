@@ -22,6 +22,7 @@ from src.services.roles import RoleAccess
 from src.conf.config import config
 from src.conf import messages
 from src.repository import comments as repositories_comments
+from src.repository import photos as repositories_photos
 
 router = APIRouter(prefix="/photos", tags=["comments"])
 
@@ -52,7 +53,7 @@ async def create_comment(photo_id: int,
     :return: A CommentResposeSchema object containing the created comment.
     """
 
-    photo_exists = await repositories_comments.get_photo_by_id(photo_id, db)
+    photo_exists = await repositories_photos.get_photo_by_id(photo_id, db)
     if photo_exists is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.PHOTO_NOT_FOUND)
 
