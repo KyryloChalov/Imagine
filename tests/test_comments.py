@@ -8,6 +8,8 @@ from src.schemas.photos import PhotosSchema, PhotosResponse
 from src.repository.comments import create_comment, get_comment, get_user_comments_for_photo, get_all_comment_for_photo, \
     edit_comment, delete_comment, get_photo_by_id
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException
+from src.conf import messages
 
 
 @pytest.mark.asyncio
@@ -61,6 +63,23 @@ class TestAsyncComment(unittest.IsolatedAsyncioTestCase):
         result = await edit_comment(self.id, body, self.session)
         self.assertEquals(result.opinion, body.opinion)
         self.session.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_edit_comment_exception(self):
+        body = CommentSchema(opinion="Test comment")
+        comment_id = 1
+        session = MagicMock(spec=AsyncSession)
+
+        mocked_comment = MagicMock()
+        mocked_comment.scalar_one_or_none.return_value = CommentSchema(opinion="Test comment")
+        session.execute.return_value = mocked_comment
+
+        session.commit.side_effect = Exception("Database error")
+
+        with pytest.raises(HTTPException):
+            result = await edit_comment(comment_id, body, session)
+
+        session.rollback.assert_called_once()
 
     async def test_delete_comment(self):
         mocked_comment = MagicMock()
@@ -118,13 +137,3 @@ async def test_create_comment():
         session.add.assert_called_once_with(mock_comment.return_value)
         session.commit.assert_called_once()
         session.refresh.assert_called_once_with(mock_comment.return_value)
-
-
-@pytest.mark.asyncio
-async def test_get_photo_by_id():
-    # expected_photo = PhotosSchema(id=1, path="Test photo", description="Test description")
-    mocked_photo = MagicMock()
-    # mocked_photo.scalar_one_or_none.return_value = expected_photo
-    # session.execute.return_value = mocked_photo
-    # result = await get_comment(self.id, self.session)
-    # assertEqual(result, expected_photo)

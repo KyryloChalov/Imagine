@@ -13,7 +13,7 @@ def test_get_ratings_not_authorize(client, monkeypatch):
         monkeypatch.setattr("fastapi_limiter.FastAPILimiter.redis", AsyncMock())
         monkeypatch.setattr("fastapi_limiter.FastAPILimiter.identifier", AsyncMock())
         monkeypatch.setattr("fastapi_limiter.FastAPILimiter.http_callback", AsyncMock())
-        response = client.get('/api/photos/ratings/{photo_id}')
+        response = client.get('/api/photos/{photo_id}/ratings')
         assert response.status_code == 401, response.text
         data = response.json()
         assert data["detail"] == "Not authenticated"
@@ -28,6 +28,6 @@ def test_get_ratings_not_found_by_id(client, get_token, monkeypatch):
         token = get_token
         photo_id = 123
         headers = {"Authorization": f"Bearer {token}"}
-        response = client.get(f'/api/photos/ratings/{photo_id}', headers=headers)
+        response = client.get(f'/api/photos/{photo_id}/ratings', headers=headers)
         assert response.status_code == 404, response.text
         data = response.json()
