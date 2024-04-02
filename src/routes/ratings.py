@@ -19,6 +19,7 @@ from src.services.roles import RoleAccess
 from src.conf import messages, constants
 from src.repository import comments as repositories_comments
 from src.repository import ratings as repositories_ratings
+from src.repository import photos as repositories_photos
 
 router = APIRouter(prefix="/photos", tags=["ratings"])
 
@@ -56,7 +57,7 @@ async def create_rating(photo_id: int,
     :raises HTTPException: If user is not authorized to access the operation.
     """
 
-    photo_exists: Photo | None = await repositories_comments.get_photo_by_id(photo_id, db)
+    photo_exists: Photo | None = await repositories_photos.get_photo_by_id(photo_id, db)
 
     if photo_exists is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.PHOTO_NOT_FOUND)
@@ -97,7 +98,7 @@ async def get_user_rating(
     :raises HTTPException: If user rating does not exist.
     """
 
-    photo_exists: Photo | None = await repositories_comments.get_photo_by_id(photo_id, db)
+    photo_exists: Photo | None = await repositories_photos.get_photo_by_id(photo_id, db)
 
     if photo_exists is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.PHOTO_NOT_FOUND)
