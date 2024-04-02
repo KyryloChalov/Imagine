@@ -175,7 +175,7 @@ async def get_me(user: User = Depends(auth_service.get_current_user)):
 async def get_username_info(
     username: str,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(auth_service.get_current_user),
+    # user: User = Depends(auth_service.get_current_user),
 ):
 
     """

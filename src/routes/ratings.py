@@ -20,7 +20,7 @@ from src.conf import messages, constants
 from src.repository import comments as repositories_comments
 from src.repository import ratings as repositories_ratings
 
-router = APIRouter(prefix="/photos/ratings", tags=["photos"])
+router = APIRouter(prefix="/photos", tags=["ratings"])
 
 # Access to the operations by roles
 access_get = RoleAccess([Role.admin, Role.moderator, Role.user])
@@ -30,7 +30,7 @@ access_delete = RoleAccess([Role.admin, Role.moderator])
 
 
 @router.post(
-    "/{photo_id}",
+    "/{photo_id}/ratings",
     response_model=RatingResponseSchema,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(access_create)],
@@ -73,7 +73,7 @@ async def create_rating(photo_id: int,
 
 
 @router.get(
-    "/user/{photo_id}",
+    "/{photo_id}/user/ratings",
     response_model=RatingResponseSchema,
     dependencies=[Depends(access_get)]
 )
@@ -113,7 +113,7 @@ async def get_user_rating(
 
 
 @router.get(
-    "/{photo_id}",
+    "/{photo_id}/ratings",
     response_model=RatingAVGResponseSchema,
     dependencies=[Depends(access_get)],
 )
@@ -143,7 +143,7 @@ async def get_avg_rating(photo_id: int = Path(ge=1),
 
 
 @router.delete(
-    "/{rating_id}",
+    "/ratings/{rating_id}",
     # status_code=status.HTTP_204_NO_CONTENT,
     response_model=RatingResponseSchema,
     dependencies=[Depends(access_delete)],
