@@ -20,13 +20,14 @@ from sqlalchemy.orm import Session
 
 from src.schemas.photos import PhotosResponse
 from src.database.db import get_db
-from src.models.models import User, Photo, CropMode, EffectMode, Effect
+from src.models.models import User, Photo
 from src.schemas.user import UserResponse
 from src.services.auth import auth_service
 from src.conf.config import config
 from src.repository import users as repositories_users
 from src.repository import photos as repositories_photos
 from src.conf.messages import NO_PHOTO_BY_ID, PHOTO_SUCCESSFULLY_DELETED
+from src.conf.constants import CropMode, EffectMode, Effect
 from src.routes.ratings import access_delete
 
 
