@@ -232,7 +232,6 @@ async def change_photo(
     """
     The change_photo function changes the photo.
         round, high, width, face, cartoonify, vignette, borders
-        Можна одразу повертати json з лінком та QR-кодом на світлину - так і треба
 
     :param photo_id: int: Identify the photo to be changed
     :param width: int | None: Set the width of the image
