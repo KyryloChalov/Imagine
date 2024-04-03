@@ -11,6 +11,7 @@ TESTING = environ.get("TESTING")
 # from sqlalchemy.orm import DeclarativeBase # переставив до models.models.py
 # class Base(DeclarativeBase): ...
 
+
 class DatabaseSessionManager:
     def __init__(self, url: str):
         self._engine: AsyncEngine | None = create_async_engine(url)

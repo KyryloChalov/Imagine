@@ -30,7 +30,7 @@ PHOTO_MAX_DESCRIPTION_LENGTH = 250
 AVATAR_PATH_LENGTH = 250
 
 ALLOWED_CROP_MODES = ("fill", "thumb", "fit", "limit", "pad", "scale", None)
-ACCESS_TOKEN_TIME_LIVE = 15
+ACCESS_TOKEN_TIME_LIVE = 30
 
 
 class CropMode(str, enum.Enum):

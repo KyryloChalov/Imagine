@@ -34,13 +34,14 @@ def init_cloudinary():
 
 
 async def get_or_create_tag(tag_name: str, db: AsyncSession) -> Tag:
+
     """
     The get_or_create_tag function takes a tag name and an async database session.
     It then checks if the tag exists in the database, and returns it if so.
-    If not, it creates a new Tag object with that name, adds it to the session, commits
-    the changes to the database (which generates its primary key), refreshes that object from
+    If not, it creates a new Tag object with that name, adds it to the session, commits 
+    the changes to the database (which generates its primary key), refreshes that object from 
     the database (to get its primary key) and returns it.
-
+    
     :param tag_name: str: Specify the name of the tag that we want to create or get
     :param db: AsyncSession: Pass in the database session to the function
     :return: A tag object
@@ -81,7 +82,7 @@ async def get_QR_code(path: str, unique_photo_id: uuid, db: AsyncSession) -> str
     The get_QR_code function takes in a path and unique_photo_id,
         creates a QR code from the path, uploads it to cloudinary with the unique photo id as its name.
         It returns the secure url of that image.
-
+    
     :param path: str: Pass in the path to the image that is being uploaded
     :param unique_photo_id: uuid: Make sure that the qr code is unique and not used by another photo
     :param db: AsyncSession: Create a database session
@@ -163,7 +164,6 @@ async def create_photo(
         raise e
     return {"success message": PHOTO_SUCCESSFULLY_ADDED}
 
-
 async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
     """
     The add_tag_to_photo function adds a tag to the photo with max numbers tags = 5.
@@ -172,7 +172,7 @@ async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
             name_tag (str): The name of the tag.
         Returns:
             dict: A dictionary with success message if everything went well, or an error message otherwise.
-
+    
     :param photo_id: int: Specify the photo to which you want to add a tag
     :param name_tag: str: Specify the name of the tag to be added
     :param db: AsyncSession: Pass the database session to the function
@@ -239,9 +239,10 @@ async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
 async def edit_photo_description(
     user: User, photo_id: int, description: str, db: AsyncSession
 ) -> dict:
+
     """
     The edit_photo_description function allows a user to edit the description of an existing photo.
-
+    
     :param user: User: Identify the user who is making the request
     :param photo_id: int: Identify the photo to be edited
     :param description: str: Pass the description of the photo to be edited
@@ -280,9 +281,10 @@ async def edit_photo_description(
 async def get_all_photos(
     skip_photos: int, photos_per_page: int, db: AsyncSession
 ) -> list[Photo]:
+
     """
     The get_all_photos function returns a list of Photo objects.
-
+    
     :param skip_photos: int: Skip the first n photos
     :param photos_per_page: int: Specify the number of photos to be returned per page
     :param db: AsyncSession: Pass in the database connection
@@ -298,12 +300,13 @@ async def get_all_photos(
 
 
 async def get_photo_by_id(photo_id: int, db: AsyncSession) -> dict | None:
+
     """
     The get_photo_by_id function returns a photo object from the database.
         Args:
             photo_id (int): The id of the photo to be returned.
             db (AsyncSession): An async session for querying the database.
-
+    
     :param photo_id: int: Specify the id of the photo we want to retrieve
     :param db: AsyncSession: Pass in the database connection to the function
     :return: A dictionary with the photo's information
@@ -316,6 +319,7 @@ async def get_photo_by_id(photo_id: int, db: AsyncSession) -> dict | None:
 
 
 async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
+
     """
     The delete_photo function deletes a photo from the database and cloudinary.
         Args:
@@ -324,7 +328,7 @@ async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
             db (AsyncSession): An async session for interacting with the database.
         Returns:
             bool: True if successful, False otherwise.
-
+    
     :param photo_id: int: Specify the photo to be deleted
     :param user: User: Check if the user is authorized to delete a photo
     :param db: AsyncSession: Pass the database session to the function
@@ -336,46 +340,46 @@ async def delete_photo(photo_id: int, user: User, db: AsyncSession) -> bool:
     if not photo:
         return False
 
-    # <<<<<<< oleksandr
-    #    if user.role == Role.admin or user.role == Role.moderator or photo.user_id == user.id:
-    #        cloudinary.config(
-    #        cloud_name=config.CLOUDINARY_NAME,
-    #        api_key=config.CLOUDINARY_API_KEY,
-    #        api_secret=config.CLOUDINARY_API_SECRET,
-    #        secure=True,
-    #    )
-    # =======
-    # <<<<<<< transform
+#<<<<<<< oleksandr
+#    if user.role == Role.admin or user.role == Role.moderator or photo.user_id == user.id:
+#        cloudinary.config(
+#        cloud_name=config.CLOUDINARY_NAME,
+#        api_key=config.CLOUDINARY_API_KEY,
+#        api_secret=config.CLOUDINARY_API_SECRET,
+#        secure=True,
+#    )
+#=======
+#<<<<<<< transform
     if (
         user.role == Role.admin
         or user.role == Role.moderator
         or photo.user_id == user.id
     ):
         init_cloudinary()
-        # =======
-        # <<<<<<< oleksandr
-        #    if user.role == Role.admin or photo.user_id == user.id:
-        #        cloudinary.config(
-        #        cloud_name=config.CLOUDINARY_NAME,
-        #        api_key=config.CLOUDINARY_API_KEY,
-        #        api_secret=config.CLOUDINARY_API_SECRET,
-        #        secure=True,
-        #    )
-        # =======
-        #    if (
-        #        user.role == Role.admin
-        #        or user.role == Role.moderator
-        #        or photo.user_id == user.id
-        #    ):
-        #        cloudinary.config(
-        #            cloud_name=config.CLOUDINARY_NAME,
-        #            api_key=config.CLOUDINARY_API_KEY,
-        #            api_secret=config.CLOUDINARY_API_SECRET,
-        #            secure=True,
-        #        )
-        # >>>>>>> dev
-        # >>>>>>> dev
-        # >>>>>>> dev
+# =======
+# <<<<<<< oleksandr
+#    if user.role == Role.admin or photo.user_id == user.id:
+#        cloudinary.config(
+#        cloud_name=config.CLOUDINARY_NAME,
+#        api_key=config.CLOUDINARY_API_KEY,
+#        api_secret=config.CLOUDINARY_API_SECRET,
+#        secure=True,
+#    )
+# =======
+#    if (
+#        user.role == Role.admin
+#        or user.role == Role.moderator
+#        or photo.user_id == user.id
+#    ):
+#        cloudinary.config(
+#            cloud_name=config.CLOUDINARY_NAME,
+#            api_key=config.CLOUDINARY_API_KEY,
+#            api_secret=config.CLOUDINARY_API_SECRET,
+#            secure=True,
+#        )
+# >>>>>>> dev
+# >>>>>>> dev
+# >>>>>>> dev
         cloudinary.uploader.destroy(photo.public_photo_id)
         try:
             # Видалення пов'язаних рейтингів
@@ -399,7 +403,7 @@ async def del_photo_tag(photo_id: int, name_tag: str, db: AsyncSession):
             name_tag (str): The name of the tag to be deleted.
         Returns:
             dict: A dictionary containing success message if successful, or an error message otherwise.
-
+    
     :param photo_id: int: Find the photo in the database
     :param name_tag: str: Specify the name of the tag to be deleted
     :param db: AsyncSession: Pass the database connection to the function
@@ -439,6 +443,7 @@ async def del_photo_tag(photo_id: int, name_tag: str, db: AsyncSession):
     return {"success message": "Tag successfully deleted"}
 
 
+
 async def change_photo(
     user: User,
     photo_id: int,
@@ -448,12 +453,13 @@ async def change_photo(
     crop_mode: str,
     effect: str,
 ) -> Photo:
+
     """
     The change_photo function takes a photo_id, width, height, crop_mode and effect as input.
     It then checks if the crop mode is allowed. If it is not allowed an error message will be returned to the user.
-    If it is allowed then the transformation of the image will take place on cloudinary and a new url for that transformed image
+    If it is allowed then the transformation of the image will take place on cloudinary and a new url for that transformed image 
     will be returned along with its QR code.
-
+    
     :param user: User: Get the username of the user
     :param photo_id: int: Identify the photo in the database
     :param db: AsyncSession: Pass the database session to the function
@@ -513,11 +519,12 @@ async def make_avatar_from_photo(
     effect_mode: str,
     db: AsyncSession,
 ) -> Photo:
+
     """
     The make_avatar_from_photo function takes a photo_id, effect_mode and user as input.
     It then queries the database for the photo with that id. If it exists, it uploads
     the image to cloudinary using the given effect mode and returns a url to that image.
-
+    
     :param user: User: Get the username of the user
     :param photo_id: int: Identify the photo that will be used to create an avatar
     :param effect_mode: str: Apply a filter to the photo
@@ -560,19 +567,15 @@ async def make_avatar_from_photo(
 
     return {"avatar": url, "QR code": QR_code}
 
+  
 
-async def search_photos(
-    search_keyword: str,
-    photos_per_page: int,
-    skip_photos: int,
-    db: AsyncSession,
-    user: User,
-) -> list[Photo]:
+async def search_photos(search_keyword: str, photos_per_page: int, skip_photos: int,
+                    db: AsyncSession, user: User) -> list[Photo]:
     """
     The search_photos function searches for photos that match the search_keyword.
         The function returns a list of Photo objects that match the search_keyword.
-
-
+        
+    
     :param search_keyword: str: Search for photos that contain the keyword in their description or tags
     :param photos_per_page: int: Limit the number of photos per page
     :param skip_photos: int: Skip the number of photos specified by this parameter
@@ -580,24 +583,15 @@ async def search_photos(
     :param user: User: Check if the user is logged in or not
     :return: A list of photos
     """
-    stmt = (
-        select(Photo)
-        .where(
-            or_(
-                Photo.description.ilike(f"%{search_keyword}%"),
-                and_(
+    stmt = select(Photo).where(or_(Photo.description.ilike(f"%{search_keyword}%"),
+                            and_(
                     Tag.name == search_keyword,
                     # mtm
                     Photo.id == photo_m2m_tag.c.photo_id,
                     Tag.id == photo_m2m_tag.c.tag_id,
-                ),
-            )
-        )
-        .group_by(Photo.id)
-        .order_by(Photo.id)
-        .offset(skip_photos)
-        .limit(photos_per_page)
-    )
+                                )
+                            )).group_by(Photo.id).order_by(
+        Photo.id).offset(skip_photos).limit(photos_per_page)
     result = await db.execute(stmt)
     photos_key_word = result.scalars().all()
     return photos_key_word
@@ -607,7 +601,7 @@ async def search_photos(
 # вмксто функции search_photos_by_filter где ми находим 2-мя запросами
 # async def search_photo(search_keyword: str, rate_min: float, rate_max: float, photos_per_page: int, skip_photos: int,
 #                     db: AsyncSession, user: User) -> list[Photo]:
-
+    
 #     if rate_min or rate_max:
 #         rate_min = rate_min or 0.01
 #         rate_max = rate_max or 5.0
@@ -636,22 +630,14 @@ async def search_photos(
 #     photos_with_filter = result.scalars().all()
 #     return photos_with_filter
 
-
-async def search_photos_by_filter(
-    search_keyword: str,
-    rate_min: float,
-    rate_max: float,
-    photos_per_page: int,
-    skip_photos: int,
-    db: AsyncSession,
-    user: User,
-) -> list[Photo]:
+async def search_photos_by_filter(search_keyword: str, rate_min: float, rate_max: float, photos_per_page: int, skip_photos: int,
+                    db: AsyncSession, user: User) -> list[Photo]:
     # ищем по ключевому слову в Description Photo со средним рейтингом в диапазоне
     """
     The search_photos_by_filter function searches for photos by a search keyword,
         and filters the results with average rating in range from minimum to maximum rating.
-
-
+        
+    
     :param search_keyword: str: Search for a keyword in the description of the photo
     :param rate_min: float: Specify the minimum rating of a photo
     :param rate_max: float: Specify the minimum rating of a photo
@@ -664,51 +650,43 @@ async def search_photos_by_filter(
         rate_min = rate_min or 0.1
         rate_max = rate_max or 5.0
         print(rate_min, rate_max)
-    stmt = (
-        select(Photo)
-        .join(Rating)
-        .where(Photo.description.ilike(f"%{search_keyword}%"))
-        .group_by(Photo.id)
-        .having(
-            and_(
-                func.avg(Rating.rating) >= rate_min, func.avg(Rating.rating) <= rate_max
-            )
-        )
-        .order_by(Photo.id)
-        .offset(skip_photos)
-        .limit(photos_per_page)
-    )
+    stmt = (select(Photo)
+                .join(Rating)
+                .where(Photo.description.ilike(f"%{search_keyword}%"))
+                .group_by(Photo.id)
+                .having(and_(
+            func.avg(Rating.rating) >= rate_min,
+            func.avg(Rating.rating) <= rate_max
+        ))
+                .order_by(Photo.id)
+                .offset(skip_photos)
+                .limit(photos_per_page)
+                )
     result = await db.execute(stmt)
     photos_key_word = result.scalars().all()
-    # ищем по совпадению ключевого слова и Тега со средним рейтингом в диапазоне
-    stmt = (
-        select(Photo)
-        .join(photo_m2m_tag)
-        .join(Tag)
-        .join(Rating)
-        .where(
-            and_(
-                Tag.name == search_keyword,
-                Photo.id == photo_m2m_tag.c.photo_id,
-                Tag.id == photo_m2m_tag.c.tag_id,
+     # ищем по совпадению ключевого слова и Тега со средним рейтингом в диапазоне
+    stmt = (select(Photo)
+            .join(photo_m2m_tag)
+            .join(Tag)
+            .join(Rating)
+            .where(and_(
+        Tag.name == search_keyword,
+        Photo.id == photo_m2m_tag.c.photo_id,
+        Tag.id == photo_m2m_tag.c.tag_id,
+    ))
+            .group_by(Photo.id)
+            .having(and_(
+        func.avg(Rating.rating) >= rate_min,
+        func.avg(Rating.rating) < rate_max
+    ))
+            .order_by(Photo.id)
+            .offset(skip_photos)
+            .limit(photos_per_page)
             )
-        )
-        .group_by(Photo.id)
-        .having(
-            and_(
-                func.avg(Rating.rating) >= rate_min, func.avg(Rating.rating) < rate_max
-            )
-        )
-        .order_by(Photo.id)
-        .offset(skip_photos)
-        .limit(photos_per_page)
-    )
     result = await db.execute(stmt)
     photos_by_tags = result.scalars().all()
     # объединяем результаты поиска по ключевому слову и тегу со средним рейтингом в диапазоне и убираем дубликаты из результатов
     photos = photos_key_word + [x for x in photos_by_tags if x not in photos_key_word]
     if photos == []:
-        raise HTTPException(
-            status_code=400, detail=f"Photo with keyword={search_keyword} not found"
-        )
+        raise  HTTPException(status_code=400, detail=f"Photo with keyword={search_keyword} not found")
     return photos

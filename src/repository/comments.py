@@ -9,17 +9,22 @@ from sqlalchemy import select, update, func, extract, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
-from src.schemas.comments import CommentSchema, CommentResposeSchema, CommentUpdateSchema
+from src.schemas.comments import (
+    CommentSchema,
+    CommentResposeSchema,
+    CommentUpdateSchema,
+)
 from src.conf import messages
 from src.models.models import Comment, Photo
 from src.repository.photos import get_photo_by_id
 
 
-async def create_comment(comment: CommentSchema,
-                         photo_id: int,
-                         user_id: uuid.UUID,
-                         db: AsyncSession = Depends(get_db),
-                         ):
+async def create_comment(
+    comment: CommentSchema,
+    photo_id: int,
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Create comment
 
@@ -30,19 +35,21 @@ async def create_comment(comment: CommentSchema,
     :return: Comment - created comment
     """
 
-    comment = Comment(opinion=comment.opinion,
-                      photo_id=photo_id,
-                      user_id=user_id,
-                      )
+    comment = Comment(
+        opinion=comment.opinion,
+        photo_id=photo_id,
+        user_id=user_id,
+    )
     db.add(comment)
     await db.commit()
     await db.refresh(comment)
     return comment
 
 
-async def get_comment(comment_id: int,
-                      db: AsyncSession = Depends(get_db),
-                      ):
+async def get_comment(
+    comment_id: int,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Get comment by id
 
@@ -56,10 +63,11 @@ async def get_comment(comment_id: int,
     return comment.scalar_one_or_none()
 
 
-async def get_user_comments_for_photo(photo_id: int,
-                                      user_id: uuid.UUID,
-                                      db: AsyncSession = Depends(get_db),
-                                      ):
+async def get_user_comments_for_photo(
+    photo_id: int,
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Get comment by photo_id and user_id
 
@@ -74,9 +82,10 @@ async def get_user_comments_for_photo(photo_id: int,
     return comment.scalars().all()
 
 
-async def get_all_comment_for_photo(photo_id: int,
-                                    db: AsyncSession = Depends(get_db),
-                                    ):
+async def get_all_comment_for_photo(
+    photo_id: int,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Get comment by photo_id
 
@@ -90,10 +99,11 @@ async def get_all_comment_for_photo(photo_id: int,
     return comment.scalars().all()
 
 
-async def edit_comment(comment_id: int,
-                       body: CommentUpdateSchema,
-                       db: AsyncSession = Depends(get_db),
-                       ):
+async def edit_comment(
+    comment_id: int,
+    body: CommentUpdateSchema,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Edit comment
 
@@ -118,15 +128,16 @@ async def edit_comment(comment_id: int,
         await db.refresh(comment)
     except Exception as e:
         await db.rollback()
-        print(f'Error: {e}')
+        print(f"Error: {e}")
         raise HTTPException(status_code=409, detail=messages.ERROR_UPDATING_COMMENT)
 
     return comment
 
 
-async def delete_comment(comment_id: int,
-                         db: AsyncSession = Depends(get_db),
-                         ):
+async def delete_comment(
+    comment_id: int,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Delete comment
 
