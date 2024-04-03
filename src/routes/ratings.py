@@ -62,6 +62,12 @@ async def create_rating(photo_id: int,
     if photo_exists is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.PHOTO_NOT_FOUND)
 
+    if photo_exists.user_id == user.id:
+        raise HTTPException(
+            status_code=status.HTTP_423_LOCKED,
+            detail=messages.RATING_OWN_PHOTO,
+        )
+
     is_rating = await repositories_ratings.get_user_rating_for_photo(photo_id, user.id, db)
     if is_rating:
         raise HTTPException(
