@@ -9,21 +9,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
 from src.models.models import User, Role
-from src.schemas.user import UserChangeRoleResponse, UserChangeRole, UserResponse, AboutUser, UserUpdateSchema
+from src.schemas.user import UserChangeRoleResponse, UserChangeRole, UserResponse, AboutUser, UserUpdateSchema, UserResponseAvatar
 from src.services.auth import auth_service
 from src.conf import messages
 from src.conf.config import config
 from src.services.roles import RoleAccess
 from src.repository import users as repositories_users
+from src.repository.photos import init_cloudinary
 
 
 router = APIRouter(prefix="/users", tags=["users"])
-cloudinary.config(
-    cloud_name=config.CLOUDINARY_NAME,
-    api_key=config.CLOUDINARY_API_KEY,
-    api_secret=config.CLOUDINARY_API_SECRET,
-    secure=True,
-)
 
 access_to_route_all = RoleAccess([Role.admin, Role.moderator])
 
@@ -55,6 +50,37 @@ async def get_all_users(
     users = await repositories_users.get_all_users(limit, offset, db)
     return users
 
+@router.patch(
+    "/avatar",
+    response_model=UserResponseAvatar,
+    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+)
+async def update_avatar_url(
+    file: UploadFile = File(),
+    user: User = Depends(auth_service.get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    The update_avatar_url function takes a file and user as input,
+        uploads the file to cloudinary, updates the avatar_url in the database
+        and returns a UserResponse object.
+
+    :param file: UploadFile: Upload the file to cloudinary
+    :param user: User: Get the current user
+    :param db: AsyncSession: Get the database session
+    :return: The user object with the updated avatar_url
+    :doc-author: Trelent
+    """
+    init_cloudinary()
+    public_id = f"Imagine/{user.email}"
+    res = cloudinary.uploader.upload(file.file, public_id=public_id, overwrite=True)
+    res_url = cloudinary.CloudinaryImage(public_id).build_url(
+        width=250, height=250, crop="fill", version=res.get("version")
+    )
+    user = await repositories_users.update_avatar_url(user.email, res_url, db)
+    auth_service.cache.set(user.email, pickle.dumps(user))
+    auth_service.cache.expire(user.email, 300)
+    return user
 
 @router.patch("/{id}", response_model=UserResponse,
     dependencies=[Depends(RateLimiter(times=1, seconds=20))])
@@ -195,36 +221,4 @@ async def get_username_info(
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=messages.USER_NOT_FOUND)
     user.num_photos = num_photos
-    return user
-
-
-@router.patch(
-    "/avatar",
-    response_model=UserResponse,
-    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
-)
-async def update_avatar_url(
-    file: UploadFile = File(),
-    user: User = Depends(auth_service.get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    The update_avatar_url function takes a file and user as input,
-        uploads the file to cloudinary, updates the avatar_url in the database
-        and returns a UserResponse object.
-
-    :param file: UploadFile: Upload the file to cloudinary
-    :param user: User: Get the current user
-    :param db: AsyncSession: Get the database session
-    :return: The user object with the updated avatar_url
-    :doc-author: Trelent
-    """
-    public_id = f"photos/{user.email}"
-    res = cloudinary.uploader.upload(file.file, public_id=public_id, owerite=True)
-    res_url = cloudinary.CloudinaryImage(public_id).build_url(
-        width=250, height=250, crop="fill", version=res.get("version")
-    )
-    user = await repositories_users.update_avatar_url(user.email, res_url, db)
-    auth_service.cache.set(user.email, pickle.dumps(user))
-    auth_service.cache.expire(user.email, 300)
     return user

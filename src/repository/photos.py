@@ -113,7 +113,7 @@ async def get_QR_code(path: str, unique_photo_id: uuid, db: AsyncSession) -> str
 
 
 async def create_photo(
-    photofile: File(),
+    photofile: File(), #type: ignore
     description: str | None,
     user: User,
     db: AsyncSession,
