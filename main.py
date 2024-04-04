@@ -106,20 +106,20 @@ app.include_router(ratings.router, prefix="/api")
 app.include_router(seed.router, prefix="")
 
 
-@app.get("/")
-async def read_root(request: Request):
-    """
-    The greeting message.
-    """
-    return templates.TemplateResponse(
-        name="index.html",
-        context={
-            "request": request,
-            "welcome": f"Welcome!",
-            "message": f"This is Imagine from _magic",
-            "about_app": "REST API",
-        },
-    )
+# @app.get("/")
+# async def read_root(request: Request):
+#     """
+#     The greeting message.
+#     """
+#     return templates.TemplateResponse(
+#         name="index.html",
+#         context={
+#             "request": request,
+#             "welcome": f"Welcome!",
+#             "message": f"This is Imagine from _magic",
+#             "about_app": "REST API",
+#         },
+#     )
 
 
 @app.get("/api/healthchecker")
