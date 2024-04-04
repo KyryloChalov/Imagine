@@ -7,7 +7,7 @@ body {
 }
 
 .wrapper {
-  width: 1170;
+  /* width: 1170; */
   margin: 0 auto;
   display: flex;
   justify-content: center;
@@ -32,7 +32,7 @@ body {
     background: #fff;
     padding: 80px 60px 60px 60px;
     box-sizing: border-box;
-    width: 670px;
+    width: 700px;
     height: 460px;
     flex-shrink: 0;
 }
@@ -78,6 +78,22 @@ body {
     background: #009485;
     border: none;
     color: #fff;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 24px;
+    cursor: pointer;
+}
+
+.gray-page-btn {
+    display: inline-flex;
+    padding: 8px 20px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: none;
+    color: #dcd8d8;
     font-size: 18px;
     font-weight: 400;
     line-height: 24px;
@@ -138,7 +154,7 @@ body {
   font-weight: 600;
   line-height: 24px;
   margin-top: 0px;
-  margin-bottom: 32px;
+  margin-bottom: 8px;
 }
 
 .gus-fact-item-descr {
@@ -157,9 +173,9 @@ body {
   /* width: 1360px; */
   height: 699px;
   flex-shrink: 0;
-  padding-top: 80px;
-  padding-bottom: 80px;
-  margin-left: 96;
+  padding-top: 60px;
+  padding-bottom: 60px;
+  margin-left: 80;
 }
 
 .readme-page {
