@@ -182,14 +182,9 @@ async def change_user_role(user_id: uuid.UUID, body: UserUpdateSchema, db: Async
     user = user.scalar_one_or_none()
     if user:
         if current_user.role == Role.admin:
-            user.role = body.role
             user.banned = body.banned
-            user.updated_at = func.now()
-            await db.commit()
-            await db.refresh(user)
-            return user
-        else:
-            user.role = body.role
+            user.banned_at = func.now()
+        user.role = body.role
         user.updated_at = func.now()
         await db.commit()
         await db.refresh(user)

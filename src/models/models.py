@@ -150,32 +150,3 @@ class Rating(Base, Datefield):
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
-
-
-class CropMode(str, enum.Enum):
-    fill = "fill"
-    thumb = "thumb"
-    fit = "fit"
-    limit = "limit"
-    pad = "pad"
-    scale = "scale"
-
-
-class EffectMode(str, enum.Enum):
-    vignette = "vignette"
-    sepia = "sepia"
-    pixelate = "pixelate:1"
-    cartoonify = "cartoonify"
-
-
-class Effect(str, enum.Enum):
-    al_dente = "art:al_dente"
-    audrey = "art:audrey"
-    eucalyptus = "art:eucalyptus"
-    zorro = "art:zorro"
-    frost = "art:frost"
-    hokusai = "art:hokusai"
-    incognito = "art:incognito"
-    peacock = "art:peacock"
-    primavera = "art:primavera"
-    quartz = "art:quartz"

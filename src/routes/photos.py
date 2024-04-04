@@ -20,13 +20,14 @@ from sqlalchemy.orm import Session
 
 from src.schemas.photos import PhotosResponse
 from src.database.db import get_db
-from src.models.models import User, Photo, CropMode, EffectMode, Effect
+from src.models.models import User, Photo
 from src.schemas.user import UserResponse
 from src.services.auth import auth_service
 from src.conf.config import config
 from src.repository import users as repositories_users
 from src.repository import photos as repositories_photos
 from src.conf.messages import NO_PHOTO_BY_ID, PHOTO_SUCCESSFULLY_DELETED
+from src.conf.constants import CropMode, EffectMode, Effect
 from src.routes.ratings import access_delete
 
 
@@ -201,9 +202,8 @@ async def edit_photo_record(
     :return: The updated_photo object
     :doc-author: Trelent
     """
-    tags = tags[0].split(",")
     updated_photo = await repositories_photos.edit_photo_description(
-        user, photo_id, new_description, tags, db
+        user, photo_id, new_description, db
     )
 
     if updated_photo:
@@ -231,7 +231,6 @@ async def change_photo(
     """
     The change_photo function changes the photo.
         round, high, width, face, cartoonify, vignette, borders
-        Можна одразу повертати json з лінком та QR-кодом на світлину - так і треба
 
     :param photo_id: int: Identify the photo to be changed
     :param width: int | None: Set the width of the image

@@ -1,3 +1,5 @@
+import enum
+
 NAME_MIN_LENGTH = 3
 NAME_MAX_LENGTH = 30
 
@@ -28,5 +30,33 @@ PHOTO_MAX_DESCRIPTION_LENGTH = 250
 AVATAR_PATH_LENGTH = 250
 
 ALLOWED_CROP_MODES = ("fill", "thumb", "fit", "limit", "pad", "scale", None)
-ACCESS_TOKEN_TIME_LIVE = 15
+ACCESS_TOKEN_TIME_LIVE = 30
 
+
+class CropMode(str, enum.Enum):
+    fill = "fill"
+    thumb = "thumb"
+    fit = "fit"
+    limit = "limit"
+    pad = "pad"
+    scale = "scale"
+
+
+class EffectMode(str, enum.Enum):
+    vignette = "vignette"
+    sepia = "sepia"
+    pixelate = "pixelate:1"
+    cartoonify = "cartoonify"
+
+
+class Effect(str, enum.Enum):
+    al_dente = "art:al_dente"
+    audrey = "art:audrey"
+    eucalyptus = "art:eucalyptus"
+    zorro = "art:zorro"
+    frost = "art:frost"
+    hokusai = "art:hokusai"
+    incognito = "art:incognito"
+    peacock = "art:peacock"
+    primavera = "art:primavera"
+    quartz = "art:quartz"
