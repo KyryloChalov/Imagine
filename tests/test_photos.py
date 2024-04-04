@@ -154,17 +154,19 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
 
     #failed
     async def test_search_photos(self):
-        mocked_photo = MagicMock()
-        mocked_photo.first.return_value = self.photo
+        photos = [Photo(),Photo(),Photo()]
+        mocked_photos = MagicMock()
+        mocked_photos.scalars.return_value.all.return_value = photos
         result = await search_photos(self.user, "test", 10, 0, self.session)
         self.assertTrue(result)
         self.assertEqual(type(result), PhotosResponse)
 
     #failed
     async def test_search_photos_by_filter(self):
-        mocked_photo = MagicMock()
-        mocked_photo.first.return_value = self.photo
-        result = await search_photos_by_filter(self.user, "test", 10, 0, "art", self.session)
+        photos = [Photo(),Photo(),Photo()]
+        mocked_photos = MagicMock()
+        mocked_photos.scalars.return_value.all.return_value = photos
+        result = await search_photos_by_filter("test", 0, 5, 10, 0, self.session, self.user)
         self.assertTrue(result)
         self.assertEqual(type(result), PhotosResponse)
 
