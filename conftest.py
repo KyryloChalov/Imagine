@@ -20,8 +20,8 @@ from src.database.db import get_db, DatabaseSessionManager
 from src.services.auth import auth_service
 from src.conf.config import config
 
-# TEST_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
-TEST_SQLALCHEMY_DATABASE_URL = config.TEST_DB_URL
+TEST_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+# TEST_SQLALCHEMY_DATABASE_URL = config.TEST_DB_URL
 
 engine = create_async_engine(TEST_SQLALCHEMY_DATABASE_URL, poolclass=NullPool)
 
@@ -66,22 +66,27 @@ def init_models_wrap():
 
 @pytest.fixture(scope="module")
 def client():
-    # Dependency override
+    app.testing_db_session = TestingSessionLocal()
 
+    # Dependency override
     async def override_get_db():
-        session = TestingSessionLocal()
         try:
-            yield session
+            yield app.testing_db_session
         except Exception as err:
             print(err)
-            await session.rollback()
+            await app.testing_db_session.rollback()
         finally:
-            await session.close()
+            await app.testing_db_session.close()
 
     app.dependency_overrides[get_db] = override_get_db
 
     yield TestClient(app)
 
+    del app.testing_db_session
+
+@pytest.fixture(scope="module")
+def db_session(client):
+    return client.app.testing_db_session
 
 @pytest_asyncio.fixture()
 async def get_token():

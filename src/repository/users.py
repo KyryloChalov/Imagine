@@ -191,7 +191,6 @@ async def change_user_role(user_id: uuid.UUID, body: UserUpdateSchema, db: Async
         return user
             
     
-
 async def delete_user(user_id: uuid.UUID, db: AsyncSession, current_user: User):
     
     """
