@@ -70,7 +70,7 @@ body {
 
 .main-page-btn {
     display: inline-flex;
-    padding: 12px 24px;
+    padding: 8px 20px;
     justify-content: center;
     align-items: center;
     gap: 10px;
