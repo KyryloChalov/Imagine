@@ -195,8 +195,10 @@ async def add_tag_to_photo(photo_id: int, name_tag: str, db: AsyncSession):
             )
         )
     )
-    num_tags: int = await db.execute(stmt)
-    num_tags = num_tags.scalar()
+    num_tags: int = await db.scalar(stmt)
+    # num_tags = num_tags.scalar()
+    if num_tags is None:
+        num_tags = 0
     if num_tags >= 5:
         raise HTTPException(
             status_code=400, detail="You can add no more 5 tags to one photo."
