@@ -202,9 +202,8 @@ async def edit_photo_record(
     :return: The updated_photo object
     :doc-author: Trelent
     """
-    tags = tags[0].split(",")
     updated_photo = await repositories_photos.edit_photo_description(
-        user, photo_id, new_description, tags, db
+        user, photo_id, new_description, db
     )
 
     if updated_photo:
