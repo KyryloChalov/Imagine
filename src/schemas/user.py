@@ -46,6 +46,15 @@ class UserResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)  # noqa
     
+class UserResponseAvatar(BaseModel):
+    id: uuid.UUID
+    username: str
+    email: EmailStr
+    avatar: str | None
+    role: Role
+
+    model_config = ConfigDict(from_attributes=True)  # noqa
+    
 class UserChangeRoleResponse(UserResponse):
     role: Role
     banned: bool
