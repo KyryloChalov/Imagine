@@ -110,7 +110,7 @@ body {
     width: 1300px;
     flex-shrink: 0;
     padding-top: 0px;
-    padding-bottom: 80px;
+    padding-bottom: 8px;
 }
 
 .gus-facts-title {
@@ -196,10 +196,10 @@ body {
   /* width: 573px; */
   /* height: 580px; */
   flex-shrink: 0;
-  padding-top: 32px;
+  padding-top: 8px;
   padding-left: 20px;
   padding-right: 60px;
-  padding-bottom: 60px;
+  padding-bottom: 20px;
   box-sizing: border-box;
   margin: auto;
   text-align: center;
@@ -214,7 +214,7 @@ body {
   padding-top: 32px;
   padding-left: 60px;
   padding-right: 60px;
-  padding-bottom: 60px;
+  padding-bottom: 20px;
   box-sizing: border-box;
   margin: auto;
   text-align: center;
