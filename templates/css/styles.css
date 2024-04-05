@@ -107,7 +107,7 @@ body {
 
 .gus-facts {
     text-align: center;
-    width: 1360px;
+    width: 1300px;
     flex-shrink: 0;
     padding-top: 0px;
     padding-bottom: 80px;
@@ -133,7 +133,7 @@ body {
 }
 
 .gus-fact-item {
-  width: 274px;
+  width: 270px;
 }
 
 
@@ -173,9 +173,9 @@ body {
   /* width: 1360px; */
   height: 699px;
   flex-shrink: 0;
-  padding-top: 60px;
+  padding-top: 0px;
   padding-bottom: 60px;
-  margin-left: 80;
+  margin-left: 0;
 }
 
 .readme-page {
@@ -197,7 +197,7 @@ body {
   /* height: 580px; */
   flex-shrink: 0;
   padding-top: 32px;
-  padding-left: 60px;
+  padding-left: 20px;
   padding-right: 60px;
   padding-bottom: 60px;
   box-sizing: border-box;

@@ -199,19 +199,19 @@ def test_reset_password(client, get_email_token):
 
 
 # It looks like we don't have password.len() check
-# def test_reset_password_not_valid(client, get_email_token):
-#     token = get_email_token
-#     response = client.post(f"api/auth/form_reset_password/{token}",
-#                            json={"password1": "newpassword", "password2": "newpassword"})
-#     assert response.status_code == 422, response.text
-#     assert (
-#         response.json()["detail"][0]["msg"]
-#         == "String should have at most 8 characters"
-#     )
-#     assert (
-#         response.json()["detail"][0]["type"]
-#         == "string_too_long"
-#     )
+def test_reset_password_not_valid(client, get_email_token):
+    token = get_email_token
+    response = client.post(f"api/auth/form_reset_password/{token}",
+                           json={"password1": "newpassword", "password2": "newpassword"})
+    assert response.status_code == 422, response.text
+    assert (
+        response.json()["detail"][0]["msg"]
+        == "String should have at most 8 characters"
+    )
+    assert (
+        response.json()["detail"][0]["type"]
+        == "string_too_long"
+    )
 
 
 def test_reset_password_not_valid(client, get_email_token):
