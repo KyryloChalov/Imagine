@@ -16,10 +16,10 @@ import redis.asyncio as redis
 import uvicorn
 
 from src.models.models import User
-from src.routes import photos
+# from src.routes import photos
 from src.database.db import get_db
 from src.conf.config import config
-from src.routes import auth, users, comments, seed, ratings
+from src.routes import auth, users#, comments, seed, ratings
 from src.services.auth import auth_service
 from src.conf import messages
 
@@ -99,10 +99,10 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "src" / "static"), name="s
 
 app.include_router(auth.auth_router, prefix="/api")
 app.include_router(users.router, prefix="/api")
-app.include_router(photos.router, prefix="/api")
-app.include_router(comments.router, prefix="/api")
-app.include_router(ratings.router, prefix="/api")
-app.include_router(seed.router, prefix="")
+# app.include_router(photos.router, prefix="/api")
+# app.include_router(comments.router, prefix="/api")
+# app.include_router(ratings.router, prefix="/api")
+# app.include_router(seed.router, prefix="")
 
 
 # @app.get("/")

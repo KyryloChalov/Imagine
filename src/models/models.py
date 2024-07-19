@@ -24,11 +24,11 @@ from fastapi_users_db_sqlalchemy import generics
 from sqlalchemy.orm import DeclarativeBase
 
 from src.conf.constants import (
-    TAG_MAX_LENGTH,
-    PHOTO_PATH_LENGTH,
-    TRANSFORM_PATH_LENGTH,
-    PHOTO_MAX_DESCRIPTION_LENGTH,
-    COMMENT_MAX_LENGTH,
+    # TAG_MAX_LENGTH,
+    # PHOTO_PATH_LENGTH,
+    # TRANSFORM_PATH_LENGTH,
+    # PHOTO_MAX_DESCRIPTION_LENGTH,
+    # COMMENT_MAX_LENGTH,
     USERNAME_MAX_LENGTH,
     NAME_MAX_LENGTH,
     EMAIL_MAX_LENGTH,
@@ -41,21 +41,21 @@ from src.conf.constants import (
 class Base(DeclarativeBase): ...
 
 
-class Tag(Base):
-    __tablename__ = "tags"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(
-        String(TAG_MAX_LENGTH), nullable=False, unique=True
-    )
+# class Tag(Base):
+#     __tablename__ = "tags"
+#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+#     name: Mapped[str] = mapped_column(
+#         String(TAG_MAX_LENGTH), nullable=False, unique=True
+#     )
 
 
-photo_m2m_tag = Table(
-    "photo_m2m_tag",
-    Base.metadata,
-    Column("id", Integer, primary_key=True),
-    Column("photo_id", Integer, ForeignKey("photos.id", ondelete="CASCADE")),
-    Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
-)
+# photo_m2m_tag = Table(
+#     "photo_m2m_tag",
+#     Base.metadata,
+#     Column("id", Integer, primary_key=True),
+#     Column("photo_id", Integer, ForeignKey("photos.id", ondelete="CASCADE")),
+#     Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
+# )
 
 
 class Datefield:
@@ -65,41 +65,41 @@ class Datefield:
     )
 
 
-class Photo(Base, Datefield):
-    __tablename__ = "photos"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    path: Mapped[str] = mapped_column(String(PHOTO_PATH_LENGTH), nullable=False)
-    description: Mapped[str] = mapped_column(
-        String(PHOTO_MAX_DESCRIPTION_LENGTH), nullable=False
-    )
-    path_transform: Mapped[str] = mapped_column(
-        String(TRANSFORM_PATH_LENGTH), nullable=True
-    )
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
-    comment: Mapped["Comment"] = relationship(
-        "Comment", backref="photos", cascade="all, delete-orphan"
-    )
-    rating: Mapped["Rating"] = relationship(
-        "Rating", backref="photos", cascade="all, delete-orphan"
-    )
-    tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
-    public_photo_id: Mapped[str] = mapped_column(
-        String(PHOTO_PATH_LENGTH), nullable=False
-    )
+# class Photo(Base, Datefield):
+#     __tablename__ = "photos"
+#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+#     path: Mapped[str] = mapped_column(String(PHOTO_PATH_LENGTH), nullable=False)
+#     description: Mapped[str] = mapped_column(
+#         String(PHOTO_MAX_DESCRIPTION_LENGTH), nullable=False
+#     )
+#     path_transform: Mapped[str] = mapped_column(
+#         String(TRANSFORM_PATH_LENGTH), nullable=True
+#     )
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+#     )
+#     comment: Mapped["Comment"] = relationship(
+#         "Comment", backref="photos", cascade="all, delete-orphan"
+#     )
+#     rating: Mapped["Rating"] = relationship(
+#         "Rating", backref="photos", cascade="all, delete-orphan"
+#     )
+#     tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
+#     public_photo_id: Mapped[str] = mapped_column(
+#         String(PHOTO_PATH_LENGTH), nullable=False
+#     )
 
 
-class Comment(Base, Datefield):
-    __tablename__ = "comments"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    opinion: Mapped[str] = mapped_column(String(COMMENT_MAX_LENGTH), nullable=False)
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
-    photo_id: Mapped[int] = mapped_column(
-        ForeignKey("photos.id", ondelete="CASCADE"), nullable=False
-    )
+# class Comment(Base, Datefield):
+#     __tablename__ = "comments"
+#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+#     opinion: Mapped[str] = mapped_column(String(COMMENT_MAX_LENGTH), nullable=False)
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+#     )
+#     photo_id: Mapped[int] = mapped_column(
+#         ForeignKey("photos.id", ondelete="CASCADE"), nullable=False
+#     )
 
 
 class Role(enum.Enum):
@@ -129,24 +129,24 @@ class User(Base, Datefield):
     banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     banned_at: Mapped[date] = mapped_column(Date, nullable=True)
     avatar: Mapped[str] = mapped_column(String(AVATAR_PATH_LENGTH), nullable=True)
-    photo: Mapped["Photo"] = relationship(
-        "Photo", backref="users", cascade="all, delete-orphan"
-    )
-    comment: Mapped["Comment"] = relationship(
-        "Comment", backref="users", cascade="all, delete-orphan"
-    )
-    rating: Mapped["Rating"] = relationship(
-        "Rating", backref="users", cascade="all, delete-orphan"
-    )
+    # photo: Mapped["Photo"] = relationship(
+    #     "Photo", backref="users", cascade="all, delete-orphan"
+    # )
+    # comment: Mapped["Comment"] = relationship(
+    #     "Comment", backref="users", cascade="all, delete-orphan"
+    # )
+    # rating: Mapped["Rating"] = relationship(
+    #     "Rating", backref="users", cascade="all, delete-orphan"
+    # )
 
 
-class Rating(Base, Datefield):
-    __tablename__ = "ratings"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    rating: Mapped[int] = mapped_column(nullable=False)
-    photo_id: Mapped[int] = mapped_column(
-        ForeignKey("photos.id", ondelete="CASCADE"), nullable=False
-    )
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
+# class Rating(Base, Datefield):
+#     __tablename__ = "ratings"
+#     id: Mapped[int] = mapped_column(primary_key=True)
+#     rating: Mapped[int] = mapped_column(nullable=False)
+#     photo_id: Mapped[int] = mapped_column(
+#         ForeignKey("photos.id", ondelete="CASCADE"), nullable=False
+#     )
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+#     )

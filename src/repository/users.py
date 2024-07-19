@@ -7,7 +7,7 @@ from libgravatar import Gravatar
 
 from src.conf import messages
 from src.database.db import get_db
-from src.models.models import Role, User, Photo
+from src.models.models import Role, User#, Photo
 from src.schemas.user import UserSchema, UserUpdateSchema
 
 
